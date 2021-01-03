@@ -4,12 +4,12 @@ using namespace std;
 #define SHORT
 
 void loadg();
-void parseArgs(int argc, char* argv[]);
+void parseArgs(int argc, char *argv[]);
 
-//String 使用
+// String 使用
 
 //プログラム中
-//main-10
+// main-10
 //タイトル-100
 
 //: This is unexcusable. How could someone in their right mind define
@@ -30,10 +30,8 @@ int trap = 1;
 //中間ゲート
 int tyuukan = 0;
 
-
 //スタッフロール
 int ending = 0;
-
 
 //ステージ読み込みループ(いじらない)
 int stagerr, stagepoint;
@@ -43,12 +41,10 @@ int over = 0;
 //ステージスイッチ
 int stageonoff = 0;
 
-
 //メインプログラム
 void Mainprogram();
 void rpaint();
 int maint;
-
 
 //サブクラス
 //(ウエイト系
@@ -76,19 +72,18 @@ SDL_Surface *mgrap[51];
 SDL_Surface *loadimage(string b);
 SDL_Surface *loadimage(int a, int x, int y, int r, int z);
 int mirror;
-void drawimage(SDL_Surface * mx, int a, int b);
-void drawimage(SDL_Surface * mx, int a, int b, int c, int d, int e, int f);
+void drawimage(SDL_Surface *mx, int a, int b);
+void drawimage(SDL_Surface *mx, int a, int b, int c, int d, int e, int f);
 void setre();
 void setre2();
 void setno();
 Mix_Music *otom[6];
 Mix_Chunk *oto[19];
-void ot(Mix_Chunk * x);
-void bgmchange(Mix_Music * x);
+void ot(Mix_Chunk *x);
+void bgmchange(Mix_Music *x);
 
 //文字
 void str(string c, int a, int b);
-
 
 //)
 
@@ -96,19 +91,12 @@ void stagecls();
 void stage();
 void stagep();
 
-
-
-
-
-//1-ステージ
-//10-ステージ前
+// 1-ステージ
+// 10-ステージ前
 //
-
-
 
 //ループ
 int t, tt, t1, t2, t3, t4;
-
 
 //初期化
 int zxon, zzxon;
@@ -119,21 +107,16 @@ int key, keytm;
 //三角関数
 double pai = 3.1415926535;
 
-
 //地面
 #define smax 31
 int sx, sco;
-int sa[smax], sb[smax], sc[smax], sd[smax], stype[smax], sxtype[smax],
-    sr[smax];
+int sa[smax], sb[smax], sc[smax], sd[smax], stype[smax], sxtype[smax], sr[smax];
 int sgtype[smax];
-
-
 
 //プレイヤー
 int mainmsgtype;
 int ma, mb, mnobia, mnobib, mhp;
-int mc, md, macttype, atkon, atktm, mactsok, msstar, nokori =
-    3, mactp, mact;
+int mc, md, macttype, atkon, atktm, mactsok, msstar, nokori = 3, mactp, mact;
 
 int mtype, mxtype, mtm, mzz;
 int mzimen, mrzimen, mkasok, mmuki, mmukitm, mjumptm, mkeytm, mcleartm;
@@ -143,10 +126,7 @@ int actaon[7];
 //メッセージ
 int mmsgtm, mmsgtype;
 
-int mascrollmax = 21000;	//9000
-
-
-
+int mascrollmax = 21000; // 9000
 
 //ブロック
 void tyobi(int x, int y, int type);
@@ -164,18 +144,15 @@ void setfont(int x, int y);
 
 //効果を持たないグラ
 void eyobi(int xa, int xb, int xc, int xd, int xe, int xf, int xnobia,
-	   int xnobib, int xgtype, int xtm);
+           int xnobib, int xgtype, int xtm);
 #define emax 201
 int eco;
 int ea[emax], eb[emax], enobia[emax], enobib[emax], ec[emax], ed[emax];
 int ee[emax], ef[emax], etm[emax];
 int egtype[emax];
 
-
-
 //敵キャラ
-void ayobi(int xa, int xb, int xc, int xd, int xnotm, int xtype,
-	   int xxtype);
+void ayobi(int xa, int xb, int xc, int xd, int xnotm, int xtype, int xxtype);
 void tekizimen();
 #define amax 24
 int aco;
@@ -193,13 +170,11 @@ int bco;
 int ba[bmax], bb[bmax], btm[bmax];
 int btype[bmax], bxtype[bmax], bz[bmax];
 
-
 //背景
 #define nmax 41
 int nxxmax, nco;
 int na[nmax], nb[nmax], nc[nmax], nd[nmax], ntype[nmax];
 int ne[nmax], nf[nmax], ng[nmax], nx[nmax];
-
 
 //リフト
 #define srmax 21
@@ -208,10 +183,6 @@ int sra[srmax], srb[srmax], src[srmax], srd[srmax], sre[srmax], srf[srmax];
 int srtype[srmax], srgtype[srmax], sracttype[srmax], srsp[srmax];
 int srmuki[srmax], sron[srmax], sree[srmax];
 int srsok[srmax], srmovep[srmax], srmove[srmax];
-
-
-
-
 
 //スクロール範囲
 int fx = 0, fy = 0, fzx, fzy, scrollx, scrolly;
@@ -226,21 +197,16 @@ int kscroll = 0;
 //画面サイズ(ファミコンサイズ×2)(256-224)
 int fxmax = 48000, fymax = 42000;
 
-
-
 //ステージ
 byte stagedate[17][2001];
 
 //画面黒
 int blacktm = 1, blackx = 0;
 
-
-
 //自由な値
 int xx[91];
 double xd[11];
 string xs[31];
-
 
 //タイマー測定
 //: Do with this what we did with fma
