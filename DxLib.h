@@ -18,9 +18,6 @@
 #define FALSE 0
 #define byte unsigned char
 
-//#define ScreenFlip() SDL_Flip(screen)
-//#define GetNowCount() SDL_GetTicks()
-
 // UNIMPLEMENTED - macro substitution
 #define SetFontThickness(f) ;
 #define StopSoundMem(s) ;
@@ -32,8 +29,8 @@
 void PlaySoundMem(Mix_Chunk *s, int l);
 Mix_Chunk *LoadSoundMem(const char *f);
 Mix_Music *LoadMusicMem(const char *f);
-//#define CheckSoundMem(s) !s
 
+void deinit();
 int DxLib_Init();
 
 // Main screen
@@ -84,13 +81,10 @@ byte WaitKey();
 
 // Uint32 GetColor(byte r, byte g, byte b);
 
-#define DrawGraph(a, b, mx, z) DrawGraphZ(a, b, mx)
-void DrawGraphZ(int a, int b, SDL_Surface *mx);
+void DrawGraph(int a, int b, SDL_Surface *mx);
 
-#define DrawTurnGraph(a, b, mx, z) DrawTurnGraphZ(a, b, mx)
-void DrawTurnGraphZ(int a, int b, SDL_Surface *mx);
+void DrawTurnGraph(int a, int b, SDL_Surface *mx);
 
-//#define DrawVertTurnGraph(x, y, e, a, mx, z) DrawRotaGraphZ(x, y, a, mx)
 void DrawVertTurnGraph(int a, int b, SDL_Surface *mx);
 
 SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height,

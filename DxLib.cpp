@@ -4,7 +4,7 @@ SDL_Joystick *joystick;
 
 bool keysHeld[SDLK_LAST];
 bool sound = true;
-void deinit();
+
 int DxLib_Init() {
     atexit(deinit);
     setlocale(LC_CTYPE, "ja_JP.UTF-8");
@@ -80,17 +80,17 @@ void DrawString(int a, int b, const char *x, Uint32 c) {
     if (fontType == DX_FONTTYPE_EDGE) {
         SDL_Color blk = {0, 0, 0};
         SDL_Surface *shadow = TTF_RenderUTF8_Solid(font[fontsize], x, blk);
-        DrawGraphZ(a - 1, b - 1, shadow);
-        DrawGraphZ(a, b - 1, shadow);
-        DrawGraphZ(a + 1, b - 1, shadow);
-        DrawGraphZ(a - 1, b, shadow);
-        DrawGraphZ(a + 1, b, shadow);
-        DrawGraphZ(a - 1, b + 1, shadow);
-        DrawGraphZ(a, b + 1, shadow);
-        DrawGraphZ(a + 1, b + 1, shadow);
+        DrawGraph(a - 1, b - 1, shadow);
+        DrawGraph(a, b - 1, shadow);
+        DrawGraph(a + 1, b - 1, shadow);
+        DrawGraph(a - 1, b, shadow);
+        DrawGraph(a + 1, b, shadow);
+        DrawGraph(a - 1, b + 1, shadow);
+        DrawGraph(a, b + 1, shadow);
+        DrawGraph(a + 1, b + 1, shadow);
         SDL_FreeSurface(shadow);
     }
-    DrawGraphZ(a, b, rendered);
+    DrawGraph(a, b, rendered);
     SDL_FreeSurface(rendered);
 }
 
@@ -173,7 +173,7 @@ byte WaitKey() {
     return r << 8 * 3 | g << 8 * 2 | b << 8 | 0xFF;
 }*/
 
-void DrawGraphZ(int a, int b, SDL_Surface *mx) {
+void DrawGraph(int a, int b, SDL_Surface *mx) {
     if (mx) {
         SDL_Rect offset;
         offset.x = a;
@@ -182,7 +182,7 @@ void DrawGraphZ(int a, int b, SDL_Surface *mx) {
     }
 }
 
-void DrawTurnGraphZ(int a, int b, SDL_Surface *mx) {
+void DrawTurnGraph(int a, int b, SDL_Surface *mx) {
     if (mx) {
         SDL_Rect offset;
         offset.x = a;

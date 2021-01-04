@@ -16,10 +16,12 @@ int main(int argc, char *argv[]) {
 
     //ループ
     long stime, ftime, frame_delay, fps;
-    while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0) {
+    int screenType = 100;
+    while (!ProcessMessage() && !CheckHitKey(KEY_INPUT_ESCAPE)) {
         stime = (long)SDL_GetTicks();
+
         UpdateKeys();
-        Mainprogram();
+        Mainprogram(&screenType);
 
         // fast mode if space is pressed
         fps = CheckHitKey(KEY_INPUT_SPACE) ? 60 : 30;
@@ -36,7 +38,7 @@ int main(int argc, char *argv[]) {
 }
 
 //メイン描画
-void rpaint() {
+void rpaint(int *screenType) {
 
     //ダブルバッファリング
     setcolor(0, 0, 0);
@@ -59,7 +61,7 @@ void rpaint() {
     //: Clear screen
     FillScreen();
 
-    if (mainZ == 1 && zxon >= 1) {
+    if (*screenType == 1 && zxon >= 1) {
 
         //背景
         for (t = 0; t < nmax; t++) {
@@ -981,7 +983,7 @@ void rpaint() {
         } // blacktm
     }
 
-    if (mainZ == 2) {
+    if (*screenType == 2) {
 
         setcolor(255, 255, 255);
         str("制作・プレイに関わった方々", 240 - 13 * 20 / 2, xx[12] / 100);
@@ -1011,7 +1013,7 @@ void rpaint() {
             xx[30] / 100);
     }
     // Showing lives
-    if (mainZ == 10) {
+    if (*screenType == 10) {
 
         setc0();
         FillScreen();
@@ -1024,7 +1026,7 @@ void rpaint() {
                          " × %d", nokori);
     }
     //タイトル
-    if (mainZ == 100) {
+    if (*screenType == 100) {
 
         setcolor(160, 180, 250);
         fillrect(0, 0, fxmax, fymax);
@@ -1049,17 +1051,17 @@ void rpaint() {
 } // rpaint()
 
 //メインプログラム
-void Mainprogram() {
+void Mainprogram(int *screenType) {
 
     // time managing in main function
     // stime = long(SDL_GetTicks());
 
     if (ending == 1)
-        mainZ = 2;
+        *screenType = 2;
 
     //キー
 
-    if (mainZ == 1 && tmsgtype == 0) {
+    if (*screenType == 1 && tmsgtype == 0) {
 
         if (zxon == 0) {
             zxon = 1;
@@ -1150,7 +1152,7 @@ void Mainprogram() {
         }
         // if (CheckHitKey(KEY_INPUT_F1)==1){end();}
         if (CheckHitKey(KEY_INPUT_F1) == 1) {
-            mainZ = 100;
+            *screenType = 100;
         }
         // if (CheckHitKey(KEY_INPUT_Q)==1){mkeytm=0;}
         if (CheckHitKey(KEY_INPUT_O) == 1) {
@@ -1340,7 +1342,7 @@ void Mainprogram() {
             }
             if (mtm >= 100 || fast == 1) {
                 zxon = 0;
-                mainZ = 10;
+                *screenType = 10;
                 mtm = 0;
                 mkeytm = 0;
                 nokori--;
@@ -1507,7 +1509,7 @@ void Mainprogram() {
                     stc = 0;
                     zxon = 0;
                     tyuukan = 0;
-                    mainZ = 10;
+                    *screenType = 10;
                     maintm = 0;
                 }
             } // mtype==300
@@ -1574,7 +1576,7 @@ void Mainprogram() {
                         stc = 0;
                         zxon = 0;
                         tyuukan = 0;
-                        mainZ = 10;
+                        *screenType = 10;
                         maintm = 0;
                     }
                 }
@@ -3964,10 +3966,10 @@ void Mainprogram() {
             // if (xx[3]==1){if (tyuukan==1)tyuukan=1;}
         } // kscroll
 
-    } // if (mainZ==1){
+    } // if (screenType==1){
 
     //スタッフロール
-    if (mainZ == 2) {
+    if (*screenType == 2) {
         maintm++;
 
         xx[7] = 46;
@@ -4025,28 +4027,28 @@ void Mainprogram() {
             bgmchange(otom[5]);
         }
         if (xx[30] <= -400) {
-            mainZ = 100;
+            *screenType = 100;
             nokori = 2;
             maintm = 0;
             ending = 0;
         }
 
-    } // mainZ==2
+    } // screenType==2
 
-    if (mainZ == 10) {
+    if (*screenType == 10) {
         maintm++;
 
         if (fast == 1)
             maintm += 2;
         if (maintm >= 30) {
             maintm = 0;
-            mainZ = 1;
+            *screenType = 1;
             zxon = 0;
         }
-    } // if (mainZ==10){
+    } // if (screenType==10){
 
     //タイトル
-    if (mainZ == 100) {
+    if (*screenType == 100) {
         maintm++;
         xx[0] = 0;
         if (maintm <= 10) {
@@ -4117,7 +4119,7 @@ void Mainprogram() {
         }
 
         if (xx[0] == 1) {
-            mainZ = 10;
+            *screenType = 10;
             zxon = 0;
             maintm = 0;
             nokori = 2;
@@ -4130,7 +4132,7 @@ void Mainprogram() {
     } // 100
 
     //描画
-    rpaint();
+    rpaint(screenType);
 
     // wait(20);
 
@@ -4411,18 +4413,18 @@ SDL_Surface *loadimage(SDL_Surface *a, int x, int y, int r, int z) {
 //画像表示
 void drawimage(SDL_Surface *mx, int a, int b) {
     if (mirror == 0)
-        DrawGraph(a, b, mx, TRUE);
+        DrawGraph(a, b, mx);
     if (mirror == 1)
-        DrawTurnGraph(a, b, mx, TRUE);
+        DrawTurnGraph(a, b, mx);
 }
 
 void drawimage(SDL_Surface *mx, int a, int b, int c, int d, int e, int f) {
     SDL_Surface *m;
     m = DerivationGraph(c, d, e, f, mx);
     if (mirror == 0)
-        DrawGraph(a, b, m, TRUE);
+        DrawGraph(a, b, m);
     if (mirror == 1)
-        DrawTurnGraph(a, b, m, TRUE);
+        DrawTurnGraph(a, b, m);
     SDL_FreeSurface(m);
 }
 

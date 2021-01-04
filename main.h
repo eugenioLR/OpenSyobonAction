@@ -15,7 +15,7 @@ void parseArgs(int argc, char *argv[]);
 //: This is unexcusable. How could someone in their right mind define
 //: a variable called 'main'!?
 //: The new define is after the main method
-int mainZ = 100, maintm = 0;
+int maintm = 0;
 
 //ステージ
 int stagecolor = 1;
@@ -42,8 +42,8 @@ int over = 0;
 int stageonoff = 0;
 
 //メインプログラム
-void Mainprogram();
-void rpaint();
+void Mainprogram(int *);
+void rpaint(int *);
 int maint;
 
 //サブクラス
