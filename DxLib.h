@@ -18,8 +18,8 @@
 #define FALSE 0
 #define byte unsigned char
 
-#define ScreenFlip() SDL_Flip(screen)
-#define GetNowCount() SDL_GetTicks()
+//#define ScreenFlip() SDL_Flip(screen)
+//#define GetNowCount() SDL_GetTicks()
 
 // UNIMPLEMENTED - macro substitution
 #define SetFontThickness(f) ;
@@ -32,7 +32,7 @@
 void PlaySoundMem(Mix_Chunk *s, int l);
 Mix_Chunk *LoadSoundMem(const char *f);
 Mix_Music *LoadMusicMem(const char *f);
-#define CheckSoundMem(s) !s
+//#define CheckSoundMem(s) !s
 
 int DxLib_Init();
 
@@ -80,7 +80,7 @@ byte ProcessMessage();
 byte CheckHitKey(int key);
 byte WaitKey();
 
-#define GetColor(r, g, b) SDL_MapRGB(screen->format, r, g, b)
+//#define GetColor(r, g, b) SDL_MapRGB(screen->format, r, g, b)
 
 // Uint32 GetColor(byte r, byte g, byte b);
 

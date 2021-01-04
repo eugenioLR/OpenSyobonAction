@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     }
 
     //ＤＸライブラリ使用の終了処理
-    end();
+    exit(0);
 }
 
 //メイン描画
@@ -80,15 +80,15 @@ void rpaint() {
                 // 51
                 if (ntype[t] == 100) {
                     DrawFormatString(xx[0] / 100 + fma, xx[1] / 100 + fmb,
-                                     GetColor(255, 255, 255), "51");
+                                     SDL_MapRGB(screen->format,255, 255, 255), "51");
                 }
 
                 if (ntype[t] == 101)
                     DrawFormatString(xx[0] / 100 + fma, xx[1] / 100 + fmb,
-                                     GetColor(255, 255, 255), "ゲームクリアー");
+                                     SDL_MapRGB(screen->format,255, 255, 255), "ゲームクリアー");
                 if (ntype[t] == 102)
                     DrawFormatString(xx[0] / 100 + fma, xx[1] / 100 + fmb,
-                                     GetColor(255, 255, 255),
+                                     SDL_MapRGB(screen->format,255, 255, 255),
                                      "プレイしてくれてありがとー");
             }
         } // t
@@ -275,8 +275,8 @@ void rpaint() {
                 }
                 //デフラグさん
                 if (atype[t] == 6) {
-                    if (atm[t] >= 10 && atm[t] <= 19 ||
-                        atm[t] >= 100 && atm[t] <= 119 || atm[t] >= 200) {
+                    if ((atm[t] >= 10 && atm[t] <= 19) ||
+                        (atm[t] >= 100 && atm[t] <= 119) || atm[t] >= 200) {
                         drawimage(grap[150][3], xx[0] / 100, xx[1] / 100);
                     } else {
                         drawimage(grap[6][3], xx[0] / 100, xx[1] / 100);
@@ -428,20 +428,20 @@ void rpaint() {
                 if (txtype[t] != 10) {
 
                     if (ttype[t] == 100 || ttype[t] == 101 || ttype[t] == 102 ||
-                        ttype[t] == 103 || ttype[t] == 104 && txtype[t] == 1 ||
-                        ttype[t] == 114 && txtype[t] == 1 || ttype[t] == 116) {
+                        ttype[t] == 103 || (ttype[t] == 104 && txtype[t] == 1) ||
+                        (ttype[t] == 114 && txtype[t] == 1) || ttype[t] == 116) {
                         xx[6] = 2 + xx[9];
                         drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                     }
 
-                    if (ttype[t] == 112 || ttype[t] == 104 && txtype[t] == 0 ||
-                        ttype[t] == 115 && txtype[t] == 1) {
+                    if (ttype[t] == 112 || (ttype[t] == 104 && txtype[t] == 0) ||
+                        (ttype[t] == 115 && txtype[t] == 1)) {
                         xx[6] = 1 + xx[9];
                         drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                     }
 
                     if (ttype[t] == 111 || ttype[t] == 113 ||
-                        ttype[t] == 115 && txtype[t] == 0 || ttype[t] == 124) {
+                        (ttype[t] == 115 && txtype[t] == 0) || ttype[t] == 124) {
                         xx[6] = 3 + xx[9];
                         drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                     }
@@ -942,13 +942,13 @@ void rpaint() {
         if (mainmsgtype >= 1) {
             setfont(20, 4);
             if (mainmsgtype == 1) {
-                DrawFormatString(126, 100, GetColor(255, 255, 255),
+                DrawFormatString(126, 100, SDL_MapRGB(screen->format,255, 255, 255),
                                  "WELCOME TO OWATA ZONE");
             }
             if (mainmsgtype == 1) {
                 for (t2 = 0; t2 <= 2; t2++)
                     DrawFormatString(88 + t2 * 143, 210,
-                                     GetColor(255, 255, 255), "1");
+                                     SDL_MapRGB(screen->format,255, 255, 255), "1");
             }
             setfont(20, 5);
         } // mainmsgtype>=1
@@ -1005,7 +1005,7 @@ void rpaint() {
         SetFontThickness(4);
 
         drawimage(grap[0][0], 190, 190);
-        DrawFormatString(230, 200, GetColor(255, 255, 255), " × %d", nokori);
+        DrawFormatString(230, 200, SDL_MapRGB(screen->format,255, 255, 255), " × %d", nokori);
     }
     //タイトル
     if (mainZ == 100) {
@@ -1028,14 +1028,14 @@ void rpaint() {
         setcolor(0, 0, 0);
         str("Enterキーを押せ!!", 240 - 8 * 20 / 2, 250);
     }
-    ScreenFlip();
+    SDL_Flip(screen);
 
 } // rpaint()
 
 //メインプログラム
 void Mainprogram() {
 
-    stime = long(GetNowCount());
+    stime = long(SDL_GetTicks());
 
     if (ending == 1)
         mainZ = 2;
@@ -1504,7 +1504,7 @@ void Mainprogram() {
                 }
 
                 if (mtm >= 2 &&
-                    (mtype == 301 && mtm <= 102 || mtype == 302 && mtm <= 60)) {
+                    ((mtype == 301 && mtm <= 102) || (mtype == 302 && mtm <= 60))) {
                     xx[5] = 500;
                     ma -= xx[5];
                     fx += xx[5];
@@ -2229,8 +2229,8 @@ void Mainprogram() {
                             sgtype[t] = 1;
                             sr[t] = 0;
                         }
-                        if ((sxtype[t] == 3 && mb >= 30000 ||
-                             sxtype[t] == 4 && mb >= 25000) &&
+                        if (((sxtype[t] == 3 && mb >= 30000) ||
+                             (sxtype[t] == 4 && mb >= 25000)) &&
                             sgtype[t] == 0 && mhp >= 1 &&
                             ma + mnobia > xx[8] + xx[0] + 3000 - 300 &&
                             ma < xx[8] + sc[t] - xx[0]) {
@@ -2387,7 +2387,7 @@ void Mainprogram() {
                         mb < xx[9] + sd[t] + xx[0]) {
                         if (stype[t] == 100) {
                             if (sxtype[t] == 0 ||
-                                sxtype[t] == 1 && ttype[1] != 3) {
+                                (sxtype[t] == 1 && ttype[1] != 3)) {
                                 ayobi(sa[t] + 1000, 32000, 0, 0, 0, 3, 0);
                                 sa[t] = -800000000;
                                 ot(oto[10]);
@@ -2658,7 +2658,7 @@ void Mainprogram() {
                         if ((sracttype[t] == 1) && sron[t] == 0)
                             sron[t] = 1;
 
-                        if (sracttype[t] == 1 && sron[t] == 1 ||
+                        if ((sracttype[t] == 1 && sron[t] == 1) ||
                             sracttype[t] == 3 || sracttype[t] == 5) {
                             mb += sre[t];
                             // if (srmuki[t]==0)
@@ -3955,7 +3955,7 @@ void Mainprogram() {
 
         xx[7] = 46;
         if (CheckHitKey(KEY_INPUT_1) == 1) {
-            end();
+            exit(0);
         }
         if (CheckHitKey(KEY_INPUT_SPACE) == 1) {
             for (t = 0; t <= xx[7]; t += 1) {
@@ -4119,7 +4119,7 @@ void Mainprogram() {
     if (CheckHitKey(KEY_INPUT_SPACE) == 1) {
         xx[0] = 60;
     }
-    wait2(stime, long(GetNowCount()), 1000 / xx[0]);
+    wait2(stime, long(SDL_GetTicks()), 1000 / xx[0]);
 
     // wait(20);
 
@@ -4228,7 +4228,7 @@ void tekizimen() {
                 //左右
                 xx[27] = 0;
                 if ((atype[t] >= 100 ||
-                     (ttype[tt] != 7 || ttype[tt] == 7 && atype[t] == 2)) &&
+                     (ttype[tt] != 7 || (ttype[tt] == 7 && atype[t] == 2))) &&
                     ttype[tt] != 117) {
                     if (aa[t] + anobia[t] - fx > xx[8] &&
                         aa[t] - fx < xx[8] + xx[2] &&
@@ -4307,7 +4307,7 @@ void tekizimen() {
 //タイマー測定
 void wait2(long stime, long etime, int FLAME_TIME) {
     if (etime - stime < FLAME_TIME)
-        wait(FLAME_TIME - (etime - stime));
+        SDL_Delay(FLAME_TIME - (etime - stime));
 }
 
 //乱数作成
@@ -4317,7 +4317,7 @@ int rand(int Rand) { return rand() % Rand; }
 void deinit() {
     setc0();
     FillScreen();
-    DrawString(200, 200, "EXITING...", GetColor(255, 255, 255));
+    DrawString(200, 200, "EXITING...", SDL_MapRGB(screen->format,255, 255, 255));
     SDL_Flip(screen);
 
     // SURFACES
@@ -4353,7 +4353,7 @@ void deinit() {
 //{
 //色かえ(指定)
 void setcolor(int red, int green, int blue) {
-    color = GetColor(red, green, blue);
+    color = SDL_MapRGB(screen->format,red, green, blue);
     gfxcolor = red << 8 * 3 | green << 8 * 2 | blue << 8 | 0xFF;
 }
 
@@ -8851,11 +8851,11 @@ void ayobi(int xa, int xb, int xc, int xd, int xnotm, int xtype, int xxtype) {
             anobib[aco] = any[atype[aco]];
 
             //大砲音
-            if (xtype == 7 && CheckSoundMem(oto[10]) == 0) {
+            if (xtype == 7 && !oto[10] == 0) {
                 ot(oto[10]);
             }
             //ファイア音
-            if (xtype == 10 && CheckSoundMem(oto[18]) == 0) {
+            if (xtype == 10 && !oto[18] == 0) {
                 ot(oto[18]);
             }
 

@@ -48,10 +48,10 @@ int maint;
 
 //サブクラス
 //(ウエイト系
-#define wait(i) SDL_Delay(i)
+//#define wait(i) SDL_Delay(i)
 void wait2(long stime, long etime, int FLAME_TIME);
 int rand(int Rand);
-#define end() exit(0)
+//#define end() exit(0)
 
 //描画
 Uint32 color;

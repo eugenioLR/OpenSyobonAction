@@ -1,5 +1,5 @@
 lib-flags = `sdl-config --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lSDL_ttf
-flags = -g -Wall
+flags = -g -Wall -Wno-narrowing
 
 SyobonAction:main.o loadg.o DxLib.o
 	g++ $(flags) main.o loadg.o DxLib.o -o SyobonAction $(lib-flags)
