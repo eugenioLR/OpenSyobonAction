@@ -15,13 +15,20 @@ int main(int argc, char *argv[]) {
     // SetFontThickness(4) ;
 
     //ループ
-    // for (maint=0;maint<=2;maint++){
+    long stime, ftime, frame_delay, fps;
     while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0) {
+        stime = (long)SDL_GetTicks();
         UpdateKeys();
-        maint = 0;
         Mainprogram();
-        if (maint == 3)
-            break;
+
+        // fast mode if space is pressed
+        fps = CheckHitKey(KEY_INPUT_SPACE) ? 60 : 30;
+        frame_delay = 1000 / fps;
+
+        ftime = ((long)SDL_GetTicks()) - stime;
+        if (ftime < frame_delay) {
+            SDL_Delay(frame_delay - ftime);
+        }
     }
 
     //ＤＸライブラリ使用の終了処理
@@ -80,15 +87,17 @@ void rpaint() {
                 // 51
                 if (ntype[t] == 100) {
                     DrawFormatString(xx[0] / 100 + fma, xx[1] / 100 + fmb,
-                                     SDL_MapRGB(screen->format,255, 255, 255), "51");
+                                     SDL_MapRGB(screen->format, 255, 255, 255),
+                                     "51");
                 }
 
                 if (ntype[t] == 101)
                     DrawFormatString(xx[0] / 100 + fma, xx[1] / 100 + fmb,
-                                     SDL_MapRGB(screen->format,255, 255, 255), "ゲームクリアー");
+                                     SDL_MapRGB(screen->format, 255, 255, 255),
+                                     "ゲームクリアー");
                 if (ntype[t] == 102)
                     DrawFormatString(xx[0] / 100 + fma, xx[1] / 100 + fmb,
-                                     SDL_MapRGB(screen->format,255, 255, 255),
+                                     SDL_MapRGB(screen->format, 255, 255, 255),
                                      "プレイしてくれてありがとー");
             }
         } // t
@@ -428,20 +437,24 @@ void rpaint() {
                 if (txtype[t] != 10) {
 
                     if (ttype[t] == 100 || ttype[t] == 101 || ttype[t] == 102 ||
-                        ttype[t] == 103 || (ttype[t] == 104 && txtype[t] == 1) ||
-                        (ttype[t] == 114 && txtype[t] == 1) || ttype[t] == 116) {
+                        ttype[t] == 103 ||
+                        (ttype[t] == 104 && txtype[t] == 1) ||
+                        (ttype[t] == 114 && txtype[t] == 1) ||
+                        ttype[t] == 116) {
                         xx[6] = 2 + xx[9];
                         drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                     }
 
-                    if (ttype[t] == 112 || (ttype[t] == 104 && txtype[t] == 0) ||
+                    if (ttype[t] == 112 ||
+                        (ttype[t] == 104 && txtype[t] == 0) ||
                         (ttype[t] == 115 && txtype[t] == 1)) {
                         xx[6] = 1 + xx[9];
                         drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                     }
 
                     if (ttype[t] == 111 || ttype[t] == 113 ||
-                        (ttype[t] == 115 && txtype[t] == 0) || ttype[t] == 124) {
+                        (ttype[t] == 115 && txtype[t] == 0) ||
+                        ttype[t] == 124) {
                         xx[6] = 3 + xx[9];
                         drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                     }
@@ -942,13 +955,15 @@ void rpaint() {
         if (mainmsgtype >= 1) {
             setfont(20, 4);
             if (mainmsgtype == 1) {
-                DrawFormatString(126, 100, SDL_MapRGB(screen->format,255, 255, 255),
+                DrawFormatString(126, 100,
+                                 SDL_MapRGB(screen->format, 255, 255, 255),
                                  "WELCOME TO OWATA ZONE");
             }
             if (mainmsgtype == 1) {
                 for (t2 = 0; t2 <= 2; t2++)
                     DrawFormatString(88 + t2 * 143, 210,
-                                     SDL_MapRGB(screen->format,255, 255, 255), "1");
+                                     SDL_MapRGB(screen->format, 255, 255, 255),
+                                     "1");
             }
             setfont(20, 5);
         } // mainmsgtype>=1
@@ -1005,7 +1020,8 @@ void rpaint() {
         SetFontThickness(4);
 
         drawimage(grap[0][0], 190, 190);
-        DrawFormatString(230, 200, SDL_MapRGB(screen->format,255, 255, 255), " × %d", nokori);
+        DrawFormatString(230, 200, SDL_MapRGB(screen->format, 255, 255, 255),
+                         " × %d", nokori);
     }
     //タイトル
     if (mainZ == 100) {
@@ -1035,7 +1051,8 @@ void rpaint() {
 //メインプログラム
 void Mainprogram() {
 
-    stime = long(SDL_GetTicks());
+    // time managing in main function
+    // stime = long(SDL_GetTicks());
 
     if (ending == 1)
         mainZ = 2;
@@ -1503,8 +1520,8 @@ void Mainprogram() {
                     md = 0;
                 }
 
-                if (mtm >= 2 &&
-                    ((mtype == 301 && mtm <= 102) || (mtype == 302 && mtm <= 60))) {
+                if (mtm >= 2 && ((mtype == 301 && mtm <= 102) ||
+                                 (mtype == 302 && mtm <= 60))) {
                     xx[5] = 500;
                     ma -= xx[5];
                     fx += xx[5];
@@ -4040,61 +4057,62 @@ void Mainprogram() {
             over = 0;
         }
 
-        if (CheckHitKey(KEY_INPUT_1) == 1) {
+        if (CheckHitKey(KEY_INPUT_1)) {
             sta = 1;
             stb = 1;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_2) == 1) {
+        if (CheckHitKey(KEY_INPUT_2)) {
             sta = 1;
             stb = 2;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_3) == 1) {
+        if (CheckHitKey(KEY_INPUT_3)) {
             sta = 1;
             stb = 3;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_4) == 1) {
+        if (CheckHitKey(KEY_INPUT_4)) {
             sta = 1;
             stb = 4;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_5) == 1) {
+        if (CheckHitKey(KEY_INPUT_5)) {
             sta = 2;
             stb = 1;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_6) == 1) {
+        if (CheckHitKey(KEY_INPUT_6)) {
             sta = 2;
             stb = 2;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_7) == 1) {
+        if (CheckHitKey(KEY_INPUT_7)) {
             sta = 2;
             stb = 3;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_8) == 1) {
+        if (CheckHitKey(KEY_INPUT_8)) {
             sta = 2;
             stb = 4;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_9) == 1) {
+        if (CheckHitKey(KEY_INPUT_9)) {
             sta = 3;
             stb = 1;
             stc = 0;
         }
-        if (CheckHitKey(KEY_INPUT_0) == 1) {
+
+        if (CheckHitKey(KEY_INPUT_0)) {
             xx[0] = 1;
             over = 1;
         }
         // if (CheckHitKeyAll() == 0){end();}
-        if (CheckHitKey(KEY_INPUT_RETURN) == 1) {
+        if (CheckHitKey(KEY_INPUT_RETURN)) {
             xx[0] = 1;
         }
         // if (CheckHitKey(KEY_INPUT_SPACE)==1){xx[0]=1;}
-        if (CheckHitKey(KEY_INPUT_Z) == 1) {
+        if (CheckHitKey(KEY_INPUT_Z)) {
             xx[0] = 1;
         }
 
@@ -4113,13 +4131,6 @@ void Mainprogram() {
 
     //描画
     rpaint();
-
-    // 30-fps
-    xx[0] = 30;
-    if (CheckHitKey(KEY_INPUT_SPACE) == 1) {
-        xx[0] = 60;
-    }
-    wait2(stime, long(SDL_GetTicks()), 1000 / xx[0]);
 
     // wait(20);
 
@@ -4304,12 +4315,6 @@ void tekizimen() {
 
 } // tekizimen
 
-//タイマー測定
-void wait2(long stime, long etime, int FLAME_TIME) {
-    if (etime - stime < FLAME_TIME)
-        SDL_Delay(FLAME_TIME - (etime - stime));
-}
-
 //乱数作成
 int rand(int Rand) { return rand() % Rand; }
 
@@ -4317,7 +4322,8 @@ int rand(int Rand) { return rand() % Rand; }
 void deinit() {
     setc0();
     FillScreen();
-    DrawString(200, 200, "EXITING...", SDL_MapRGB(screen->format,255, 255, 255));
+    DrawString(200, 200, "EXITING...",
+               SDL_MapRGB(screen->format, 255, 255, 255));
     SDL_Flip(screen);
 
     // SURFACES
@@ -4353,7 +4359,7 @@ void deinit() {
 //{
 //色かえ(指定)
 void setcolor(int red, int green, int blue) {
-    color = SDL_MapRGB(screen->format,red, green, blue);
+    color = SDL_MapRGB(screen->format, red, green, blue);
     gfxcolor = red << 8 * 3 | green << 8 * 2 | blue << 8 | 0xFF;
 }
 

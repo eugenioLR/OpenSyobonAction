@@ -48,8 +48,6 @@ int maint;
 
 //サブクラス
 //(ウエイト系
-//#define wait(i) SDL_Delay(i)
-void wait2(long stime, long etime, int FLAME_TIME);
 int rand(int Rand);
 //#define end() exit(0)
 
@@ -207,8 +205,3 @@ int blacktm = 1, blackx = 0;
 int xx[91];
 double xd[11];
 string xs[31];
-
-//タイマー測定
-//: Do with this what we did with fma
-long stimeZ;
-#define stime stimeZ
