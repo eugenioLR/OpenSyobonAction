@@ -14,8 +14,6 @@
 
 #include "joyconfig.h"
 
-#define TRUE 1
-#define FALSE 0
 #define byte unsigned char
 
 // UNIMPLEMENTED - macro substitution
@@ -26,6 +24,7 @@
 // Sound
 #define DX_PLAYTYPE_LOOP -1
 #define DX_PLAYTYPE_BACK 0
+#define AUDIO_CHANNELS 2
 void PlaySoundMem(Mix_Chunk *s, int l);
 Mix_Chunk *LoadSoundMem(const char *f);
 Mix_Music *LoadMusicMem(const char *f);
@@ -76,10 +75,6 @@ void UpdateKeys();
 byte ProcessMessage();
 byte CheckHitKey(int key);
 byte WaitKey();
-
-//#define GetColor(r, g, b) SDL_MapRGB(screen->format, r, g, b)
-
-// Uint32 GetColor(byte r, byte g, byte b);
 
 void DrawGraph(int a, int b, SDL_Surface *mx);
 

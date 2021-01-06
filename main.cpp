@@ -1,5 +1,7 @@
 #include "main.h"
 
+struct gameInfo gameState;
+
 // プログラムは WinMain から始まります
 // Changed to ansi c++ main()
 int main(int argc, char *argv[]) {
@@ -8,57 +10,44 @@ int main(int argc, char *argv[]) {
         return 1;
 
     //全ロード
-    loadg();
+    loadg(gameState);
 
     //フォント
     SetFontSize(16);
     // SetFontThickness(4) ;
 
     //ループ
-    long stime, ftime, frame_delay, fps;
+    long startTime, endTime, frame_delay, fps;
+    long timer = 0;
     int screenType = 100;
+
     while (!ProcessMessage() && !CheckHitKey(KEY_INPUT_ESCAPE)) {
-        stime = (long)SDL_GetTicks();
+        startTime = SDL_GetTicks();
 
         UpdateKeys();
-        Mainprogram(&screenType);
+        Mainprogram(&screenType, &timer);
+        rpaint(&screenType, gameState->graphics);
 
         // fast mode if space is pressed
         fps = CheckHitKey(KEY_INPUT_SPACE) ? 60 : 30;
         frame_delay = 1000 / fps;
 
-        ftime = ((long)SDL_GetTicks()) - stime;
-        if (ftime < frame_delay) {
-            SDL_Delay(frame_delay - ftime);
+        endTime = SDL_GetTicks() - startTime;
+        if (endTime < frame_delay) {
+            SDL_Delay(frame_delay - endTime);
         }
     }
 
+    deinitGraphics();
+
     //ＤＸライブラリ使用の終了処理
-    exit(0);
+    return 0;
 }
 
-//メイン描画
-// TODO: line ~590, draw pipe with graphics
-void rpaint(int *screenType) {
-
-    /*//ダブルバッファリング
-    setcolor(0, 0, 0);
-    // if (stagecolor==1)setcolor(170,170,255);
-    if (stagecolor == 1)
-        setcolor(160, 180, 250);
-    if (stagecolor == 2)
-        setcolor(10, 10, 10);
-    if (stagecolor == 3)
-        setcolor(160, 180, 250);
-    if (stagecolor == 4)
-        setcolor(10, 10, 10);
-    if (stagecolor == 5) {
-        setcolor(160, 180, 250);
-        sliperyFloor = 1;
-    } else {
-        sliperyFloor = 0;
-    }*/
-
+//メイン描画 43-935
+void rpaint(int *screenType, SDL_Surface ** * gameState->graphics) {
+    int t, tt, t2, t3;
+    //ダブルバッファリング
     sliperyFloor = stagecolor == 5;
     switch (stagecolor) {
         case 1:
@@ -75,7 +64,7 @@ void rpaint(int *screenType) {
     }
 
     //: Clear screen
-    FillScreen();
+    SDL_FillRect(screen, 0, color);
 
     switch (*screenType) {
         case 1:
@@ -89,17 +78,17 @@ void rpaint(int *screenType) {
                     xx[2] = 16000;
                     xx[3] = 16000;
 
-                    if (xx[0] + xx[2] >= -10 && xx[0] <= fxmax && xx[1] + xx[3] >= -10 && xx[3] <= fymax) {
+                    if (xx[0] + xx[2] >= -10 && xx[0] <= screenWidth && xx[1] + xx[3] >= -10 && xx[3] <= screenHeigh) {
 
                         if (ntype[t] != 3) {
                             if ((ntype[t] == 1 || ntype[t] == 2) && stagecolor == 5) {
-                                drawimage(grap[ntype[t] + 30][4], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[ntype[t] + 30][BACKGD], xx[0] / 100, xx[1] / 100);
                             } else {
-                                drawimage(grap[ntype[t]][4], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[ntype[t]][BACKGD], xx[0] / 100, xx[1] / 100);
                             }
                         }
                         if (ntype[t] == 3)
-                            drawimage(grap[ntype[t]][4], xx[0] / 100 - 5, xx[1] / 100);
+                            drawimage(gameState->graphics[ntype[t]][BACKGD], xx[0] / 100 - 5, xx[1] / 100);
 
                         // 51
                         if (ntype[t] == 100) {
@@ -119,11 +108,11 @@ void rpaint(int *screenType) {
                     xx[1] = eb[t] - fy;
                     xx[2] = enobia[t] / 100;
                     xx[3] = enobib[t] / 100;
-                    if (xx[0] + xx[2] * 100 >= -10 && xx[1] <= fxmax && xx[1] + xx[3] * 100 >= -10 - 8000 && xx[3] <= fymax) {
+                    if (xx[0] + xx[2] * 100 >= -10 && xx[1] <= screenWidth && xx[1] + xx[3] * 100 >= -10 - 8000 && xx[3] <= screenHeigh) {
                         switch (egtype[t]) {
                             case 0:
                                 // draw coin
-                                drawimage(grap[0][2], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[0][ITEMS], xx[0] / 100, xx[1] / 100);
                                 break;
                             case 1:
                                 // draw block particle
@@ -148,7 +137,7 @@ void rpaint(int *screenType) {
                             case 3:
                                 if (egtype[t] == 3)
                                     mirror = 1;
-                                drawimage(grap[0][5], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[0][BLOCKS2], xx[0] / 100, xx[1] / 100);
                                 mirror = 0;
                                 break;
                             case 4:
@@ -169,7 +158,7 @@ void rpaint(int *screenType) {
                 for (t = 0; t < srmax; t++) {
                     xx[0] = sra[t] - fx;
                     xx[1] = srb[t] - fy;
-                    if (xx[0] + src[t] >= -10 && xx[1] <= fxmax + 12100 && src[t] / 100 >= 1) {
+                    if (xx[0] + src[t] >= -10 && xx[1] <= screenWidth + 12100 && src[t] / 100 >= 1) {
                         xx[2] = 14;
                         if (srsp[t] == 1) {
                             xx[2] = 12;
@@ -205,47 +194,45 @@ void rpaint(int *screenType) {
                                 setcolor(100, 80, 20);
                                 drawrect((sra[t] - fx) / 100 + 20, (srb[t] - fy) / 100 + 30, src[t] / 100 - 40, 480);
                             }
-                        }
-                        if (srsp[t] == 15) {
-                            for (t2 = 0; t2 <= 2; t2++) {
-                                xx[6] = 1 + 0;
-                                drawimage(grap[xx[6]][1], (sra[t] - fx) / 100 + t2 * 29, (srb[t] - fy) / 100);
+
+                            if (srsp[t] == 15) {
+                                for (t2 = 0; t2 <= 2; t2++) {
+                                    xx[6] = 1 + 0;
+                                    drawimage(gameState->graphics[xx[6]][BLOCKS], (sra[t] - fx) / 100 + t2 * 29, (srb[t] - fy) / 100);
+                                }
                             }
-                        } // 15
+                        }
                     }
-                } // t
+                }
 
                 //プレイヤー描画
                 setcolor(0, 0, 255);
 
                 if (mactp >= 2000) {
                     mactp -= 2000;
-                    if (mact == 0) {
-                        mact = 1;
-                    } else {
-                        mact = 0;
-                    }
+                    mact = !mact;
                 }
+
                 if (!facingRight)
                     mirror = 1;
 
                 if (mtype != 200 && mtype != 1) {
                     if (mzimen) {
                         if (mact)
-                            drawimage(grap[1][0], ma / 100, mb / 100);
+                            drawimage(gameState->graphics[1][PLAYER], ma / 100, mb / 100);
                         else
-                            drawimage(grap[0][0], ma / 100, mb / 100);
+                            drawimage(gameState->graphics[0][PLAYER], ma / 100, mb / 100);
                     } else {
-                        drawimage(grap[2][0], ma / 100, mb / 100);
+                        drawimage(gameState->graphics[2][PLAYER], ma / 100, mb / 100);
                     }
                 }
                 //巨大化
                 else if (mtype == 1) {
-                    drawimage(grap[41][0], ma / 100, mb / 100);
+                    drawimage(gameState->graphics[41][PLAYER], ma / 100, mb / 100);
                 }
 
                 else if (mtype == 200) {
-                    drawimage(grap[3][0], ma / 100, mb / 100);
+                    drawimage(gameState->graphics[3][PLAYER], ma / 100, mb / 100);
                 }
 
                 mirror = 0;
@@ -259,16 +246,16 @@ void rpaint(int *screenType) {
                     xx[3] = anobib[t] / 100;
                     xx[14] = 3000;
                     xx[16] = 0;
-                    if (xx[0] + xx[2] * 100 >= -10 - xx[14] && xx[1] <= fxmax + xx[14] && xx[1] + xx[3] * 100 >= -10 && xx[3] <= fymax) {
+                    if (xx[0] + xx[2] * 100 >= -10 - xx[14] && xx[1] <= screenWidth + xx[14] && xx[1] + xx[3] * 100 >= -10 && xx[3] <= screenHeigh) {
                         if (amuki[t] == 1) {
                             mirror = 1;
                         }
                         if (atype[t] == 3 && axtype[t] == 1) {
-                            DrawVertTurnGraph(xx[0] / 100 + 13, xx[1] / 100 + 15, grap[atype[t]][3]);
+                            DrawVertTurnGraph(xx[0] / 100 + 13, xx[1] / 100 + 15, gameState->graphics[atype[t]][ENEMIES]);
                             xx[16] = 1;
                         }
                         if (atype[t] == 9 && ad[t] >= 1) {
-                            DrawVertTurnGraph(xx[0] / 100 + 13, xx[1] / 100 + 15, grap[atype[t]][3]);
+                            DrawVertTurnGraph(xx[0] / 100 + 13, xx[1] / 100 + 15, gameState->graphics[atype[t]][ENEMIES]);
                             xx[16] = 1;
                         }
                         if (atype[t] >= 100 && amuki[t] == 1)
@@ -277,27 +264,27 @@ void rpaint(int *screenType) {
                         //メイン
                         if (atype[t] < 200 && xx[16] == 0 && atype[t] != 6 && atype[t] != 79 && atype[t] != 86 && atype[t] != 30) {
                             if (!((atype[t] == 80 || atype[t] == 81) && axtype[t] == 1)) {
-                                drawimage(grap[atype[t]][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[atype[t]][ENEMIES], xx[0] / 100, xx[1] / 100);
                             }
                         }
                         //デフラグさん
                         if (atype[t] == 6) {
                             if ((atm[t] >= 10 && atm[t] <= 19) || (atm[t] >= 100 && atm[t] <= 119) || atm[t] >= 200) {
-                                drawimage(grap[150][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[150][ENEMIES], xx[0] / 100, xx[1] / 100);
                             } else {
-                                drawimage(grap[6][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[6][ENEMIES], xx[0] / 100, xx[1] / 100);
                             }
                         }
                         //モララー
                         if (atype[t] == 30) {
                             if (axtype[t] == 0)
-                                drawimage(grap[30][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[30][ENEMIES], xx[0] / 100, xx[1] / 100);
                             if (axtype[t] == 1)
-                                drawimage(grap[155][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[155][ENEMIES], xx[0] / 100, xx[1] / 100);
                         }
                         //ステルス雲
                         if ((atype[t] == 81) && axtype[t] == 1) {
-                            drawimage(grap[130][3], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[130][ENEMIES], xx[0] / 100, xx[1] / 100);
                         }
 
                         if (atype[t] == 79) {
@@ -310,69 +297,81 @@ void rpaint(int *screenType) {
                         if (atype[t] == 82) {
 
                             if (axtype[t] == 0) {
-                                xx[9] = 0;
-                                if (stagecolor == 2) {
-                                    xx[9] = 30;
-                                }
-                                if (stagecolor == 4) {
-                                    xx[9] = 60;
-                                }
-                                if (stagecolor == 5) {
-                                    xx[9] = 90;
+                                switch (stagecolor) {
+                                    case 2:
+                                        xx[9] = 30;
+                                        break;
+                                    case 4:
+                                        xx[9] = 60;
+                                        break;
+                                    case 5:
+                                        xx[9] = 90;
+                                        break;
+                                    default:
+                                        xx[9] = 0;
                                 }
                                 xx[6] = 5 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                             }
 
                             if (axtype[t] == 1) {
-                                xx[9] = 0;
-                                if (stagecolor == 2) {
-                                    xx[9] = 30;
-                                }
-                                if (stagecolor == 4) {
-                                    xx[9] = 60;
-                                }
-                                if (stagecolor == 5) {
-                                    xx[9] = 90;
+                                switch (stagecolor) {
+                                    case 2:
+                                        xx[9] = 30;
+                                        break;
+                                    case 4:
+                                        xx[9] = 60;
+                                        break;
+                                    case 5:
+                                        xx[9] = 90;
+                                        break;
+                                    default:
+                                        xx[9] = 0;
                                 }
                                 xx[6] = 4 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                             }
 
                             if (axtype[t] == 2) {
-                                drawimage(grap[1][5], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[1][BLOCKS2], xx[0] / 100, xx[1] / 100);
                             }
                         }
                         if (atype[t] == 83) {
 
                             if (axtype[t] == 0) {
-                                xx[9] = 0;
-                                if (stagecolor == 2) {
-                                    xx[9] = 30;
-                                }
-                                if (stagecolor == 4) {
-                                    xx[9] = 60;
-                                }
-                                if (stagecolor == 5) {
-                                    xx[9] = 90;
+                                switch (stagecolor) {
+                                    case 2:
+                                        xx[9] = 30;
+                                        break;
+                                    case 4:
+                                        xx[9] = 60;
+                                        break;
+                                    case 5:
+                                        xx[9] = 90;
+                                        break;
+                                    default:
+                                        xx[9] = 0;
                                 }
                                 xx[6] = 5 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100 + 10, xx[1] / 100 + 9);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100 + 10, xx[1] / 100 + 9);
                             }
 
                             if (axtype[t] == 1) {
-                                xx[9] = 0;
-                                if (stagecolor == 2) {
-                                    xx[9] = 30;
-                                }
-                                if (stagecolor == 4) {
-                                    xx[9] = 60;
-                                }
-                                if (stagecolor == 5) {
-                                    xx[9] = 90;
+                                switch (stagecolor) {
+                                    case 2:
+                                        xx[9] = 30;
+                                        break;
+                                    case 4:
+                                        xx[9] = 60;
+                                        break;
+                                    case 5:
+                                        xx[9] = 90;
+                                        break;
+                                    default:
+                                        xx[9] = 0;
                                 }
                                 xx[6] = 4 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100 + 10, xx[1] / 100 + 9);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100 + 10, xx[1] / 100 + 9);
                             }
                         }
                         //偽ポール
@@ -391,14 +390,14 @@ void rpaint(int *screenType) {
                         //ニャッスン
                         if (atype[t] == 86) {
                             if (ma >= aa[t] - fx - mnobia - 4000 && ma <= aa[t] - fx + anobia[t] + 4000) {
-                                drawimage(grap[152][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[152][ENEMIES], xx[0] / 100, xx[1] / 100);
                             } else {
-                                drawimage(grap[86][3], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[86][ENEMIES], xx[0] / 100, xx[1] / 100);
                             }
                         }
 
                         if (atype[t] == 200)
-                            drawimage(grap[0][3], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[0][ENEMIES], xx[0] / 100, xx[1] / 100);
 
                         mirror = 0;
                     }
@@ -410,133 +409,140 @@ void rpaint(int *screenType) {
                     xx[1] = tb[t] - fy;
                     xx[2] = 32;
                     xx[3] = xx[2];
-                    if (xx[0] + xx[2] * 100 >= -10 && xx[1] <= fxmax) {
-
-                        xx[9] = 0;
-                        if (stagecolor == 2) {
-                            xx[9] = 30;
-                        }
-                        if (stagecolor == 4) {
-                            xx[9] = 60;
-                        }
-                        if (stagecolor == 5) {
-                            xx[9] = 90;
+                    if (xx[0] + xx[2] * 100 >= -10 && xx[1] <= screenWidth) {
+                        switch (stagecolor) {
+                            case 2:
+                                xx[9] = 30;
+                                break;
+                            case 4:
+                                xx[9] = 60;
+                                break;
+                            case 5:
+                                xx[9] = 90;
+                                break;
+                            default:
+                                xx[9] = 0;
                         }
 
                         if (ttype[t] < 100) {
                             xx[6] = ttype[t] + xx[9];
-                            drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                         }
 
                         if (txtype[t] != 10) {
 
                             if (ttype[t] == 100 || ttype[t] == 101 || ttype[t] == 102 || ttype[t] == 103 || (ttype[t] == 104 && txtype[t] == 1) || (ttype[t] == 114 && txtype[t] == 1) || ttype[t] == 116) {
                                 xx[6] = 2 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                             }
 
                             if (ttype[t] == 112 || (ttype[t] == 104 && txtype[t] == 0) || (ttype[t] == 115 && txtype[t] == 1)) {
                                 xx[6] = 1 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                             }
 
                             if (ttype[t] == 111 || ttype[t] == 113 || (ttype[t] == 115 && txtype[t] == 0) || ttype[t] == 124) {
                                 xx[6] = 3 + xx[9];
-                                drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                                drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                             }
                         }
 
                         if (ttype[t] == 117 && txtype[t] == 1) {
-                            drawimage(grap[4][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[4][BLOCKS2], xx[0] / 100, xx[1] / 100);
                         }
 
                         if (ttype[t] == 117 && txtype[t] >= 3) {
-                            drawimage(grap[3][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[3][BLOCKS2], xx[0] / 100, xx[1] / 100);
                         }
 
                         if (ttype[t] == 115 && txtype[t] == 3) {
                             xx[6] = 1 + xx[9];
-                            drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[xx[6]][BLOCKS], xx[0] / 100, xx[1] / 100);
                         }
                         //ジャンプ台
                         if (ttype[t] == 120 && txtype[t] != 1) {
-                            drawimage(grap[16][1], xx[0] / 100 + 3, xx[1] / 100 + 2);
+                            drawimage(gameState->graphics[16][BLOCKS], xx[0] / 100 + 3, xx[1] / 100 + 2);
                         }
                         // ON-OFF
                         if (ttype[t] == 130)
-                            drawimage(grap[10][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[10][BLOCKS2], xx[0] / 100, xx[1] / 100);
                         if (ttype[t] == 131)
-                            drawimage(grap[11][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[11][BLOCKS2], xx[0] / 100, xx[1] / 100);
 
                         if (ttype[t] == 140)
-                            drawimage(grap[12][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[12][BLOCKS2], xx[0] / 100, xx[1] / 100);
                         if (ttype[t] == 141)
-                            drawimage(grap[13][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[13][BLOCKS2], xx[0] / 100, xx[1] / 100);
                         if (ttype[t] == 142)
-                            drawimage(grap[14][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[14][BLOCKS2], xx[0] / 100, xx[1] / 100);
 
                         if (ttype[t] == 300 || ttype[t] == 301)
-                            drawimage(grap[1][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[1][BLOCKS2], xx[0] / 100, xx[1] / 100);
 
                         // Pスイッチ
                         if (ttype[t] == 400) {
-                            drawimage(grap[2][5], xx[0] / 100, xx[1] / 100);
+                            drawimage(gameState->graphics[2][BLOCKS2], xx[0] / 100, xx[1] / 100);
                         }
                         //コイン
                         if (ttype[t] == 800) {
-                            drawimage(grap[0][2], xx[0] / 100 + 2, xx[1] / 100 + 1);
+                            drawimage(gameState->graphics[0][BLOCKS2], xx[0] / 100 + 2, xx[1] / 100 + 1);
                         }
                     }
                 }
 
                 //地面(壁)//土管も
-                for (t = 0; t < smax; t++) {
-                //inverse order to make pipes print correcty
-                //for (t = smax; t >= 0; t--) {
-                    if (sa[t] - fx + sc[t] >= -10 && sa[t] - fx <= fxmax + 1100) {
+                // for (t = 0; t < smax; t++) {
+                // inverse order to make pipes print correcty
+                for (t = smax; t >= 0; t--) {
+                    if (sa[t] - fx + sc[t] >= -10 && sa[t] - fx <= screenWidth + 1100) {
 
                         if (stype[t] == 0) {
+                            // green square at the top left of the screen,
+                            // i have no idea of what it's supposed to be
+                            /*
                             setcolor(40, 200, 40);
                             fillrect((sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100 + fmb, sc[t] / 100, sd[t] / 100);
                             drawrect((sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100 + fmb, sc[t] / 100, sd[t] / 100);
+                            drawimage(gameState->graphics[1][PLAYER], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100);
+                            */
                         }
                         //土管
                         if (stype[t] == 1) {
-                            drawimage(grap[7][4], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100);
+                            drawimage(gameState->graphics[7][BACKGD], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100);
                         }
                         //土管(下)
                         if (stype[t] == 2) {
-                            drawimage(grap[8][4], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100 + fmb);
+                            drawimage(gameState->graphics[8][BACKGD], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100 + fmb);
                         }
                         //土管(横)
                         if (stype[t] == 5) {
-                            //messy but works
-                            drawimage(rotateSurface90Degrees(grap[8][4], 1), (sa[t] - fx) / 100 + fma + 1, (sb[t] - fy) / 100 + fmb);
-                            drawimage(rotateSurface90Degrees(grap[8][4], 1), (sa[t] - fx) / 100 + fma + 30, (sb[t] - fy) / 100 + fmb);
+                            // messy but works
+                            drawimage(rotateSurface90Degrees(gameState->graphics[8][BACKGD], 1), (sa[t] - fx) / 100 + fma + 1, (sb[t] - fy) / 100 + fmb);
+                            drawimage(rotateSurface90Degrees(gameState->graphics[8][BACKGD], 1), (sa[t] - fx) / 100 + fma + 30, (sb[t] - fy) / 100 + fmb);
                         }
                         //落ちてくるブロック
                         if (stype[t] == 51) {
                             if (sxtype[t] == 0) {
                                 for (t3 = 0; t3 <= sc[t] / 3000; t3++) {
-                                    drawimage(grap[1][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
+                                    drawimage(gameState->graphics[1][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
                                 }
                             }
                             if (sxtype[t] == 1 || sxtype[t] == 2) {
                                 for (t3 = 0; t3 <= sc[t] / 3000; t3++) {
-                                    drawimage(grap[31][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
+                                    drawimage(gameState->graphics[31][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
                                 }
                             }
                             if (sxtype[t] == 3 || sxtype[t] == 4) {
                                 for (t3 = 0; t3 <= sc[t] / 3000; t3++) {
                                     for (t2 = 0; t2 <= sd[t] / 3000; t2++) {
-                                        drawimage(grap[65][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + 29 * t2 + fmb);
+                                        drawimage(gameState->graphics[65][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + 29 * t2 + fmb);
                                     }
                                 }
                             }
 
                             if (sxtype[t] == 10) {
                                 for (t3 = 0; t3 <= sc[t] / 3000; t3++) {
-                                    drawimage(grap[65][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
+                                    drawimage(gameState->graphics[65][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
                                 }
                             }
 
@@ -556,24 +562,25 @@ void rpaint(int *screenType) {
                             }
 
                             for (t3 = 0; t3 <= sc[t] / 3000; t3++) {
-                                if (sxtype[t] == 0) {
-                                    drawimage(grap[5 + xx[29]][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
-                                    if (stagecolor != 4) {
-                                        drawimage(grap[6 + xx[29]][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29);
-                                    } else {
-                                        drawimage(grap[5 + xx[29]][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29);
-                                    }
-                                }
-                                if (sxtype[t] == 1) {
-                                    for (t2 = 0; t2 <= sd[t] / 3000; t2++) {
-                                        drawimage(grap[1 + xx[29]][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29 * t2);
-                                    }
-                                }
-
-                                if (sxtype[t] == 2) {
-                                    for (t2 = 0; t2 <= sd[t] / 3000; t2++) {
-                                        drawimage(grap[5 + xx[29]][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29 * t2);
-                                    }
+                                switch (sxtype[t]) {
+                                    case 0:
+                                        drawimage(gameState->graphics[5 + xx[29]][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb);
+                                        if (stagecolor != 4) {
+                                            drawimage(gameState->graphics[6 + xx[29]][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29);
+                                        } else {
+                                            drawimage(gameState->graphics[5 + xx[29]][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29);
+                                        }
+                                        break;
+                                    case 1:
+                                        for (t2 = 0; t2 <= sd[t] / 3000; t2++) {
+                                            drawimage(gameState->graphics[1 + xx[29]][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29 * t2);
+                                        }
+                                        break;
+                                    case 2:
+                                        for (t2 = 0; t2 <= sd[t] / 3000; t2++) {
+                                            drawimage(gameState->graphics[5 + xx[29]][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + fmb + 29 * t2);
+                                        }
+                                        break;
                                 }
                             }
                         }
@@ -600,32 +607,32 @@ void rpaint(int *screenType) {
                         }
                         //中間
                         if (stype[t] == 500) {
-                            drawimage(grap[20][4], (sa[t] - fx) / 100, (sb[t] - fy) / 100);
+                            drawimage(gameState->graphics[20][BACKGD], (sa[t] - fx) / 100, (sb[t] - fy) / 100);
                         }
                     }
                 } // t
 
                 //描画上書き(土管)
                 for (t = 0; t < smax; t++) {
-                    if (sa[t] - fx + sc[t] >= -10 && sa[t] - fx <= fxmax + 1100) {
+                    if (sa[t] - fx + sc[t] >= -10 && sa[t] - fx <= screenWidth + 1100) {
 
                         //入る土管(右)
                         if (stype[t] == 40) {
-                            drawimage(zoomSurface(rotateSurface90Degrees(grap[7][4], 1), -1, 1, 1), (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100 + fmb + 1);
+                            drawimage(zoomSurface(rotateSurface90Degrees(gameState->graphics[7][BACKGD], 1), -1, 1, 1), (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100 + fmb + 1);
                         }
                         //とぶ土管
                         if (stype[t] == 50) {
-                            //draw 3 pipes
-                            for (int pipeOffset = 1; pipeOffset <= 3; pipeOffset++){
-                                drawimage(grap[8][4], (sa[t] - fx) / 100 + 5 + fma, (sb[t] - fy) / 100 + fmb + (29 * pipeOffset));
+                            // draw 3 pipes
+                            for (int pipeOffset = 1; pipeOffset <= 3; pipeOffset++) {
+                                drawimage(gameState->graphics[8][BACKGD], (sa[t] - fx) / 100 + 5 + fma, (sb[t] - fy) / 100 + fmb + (29 * pipeOffset));
                             }
-                            drawimage(grap[7][4], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100);
+                            drawimage(gameState->graphics[7][BACKGD], (sa[t] - fx) / 100 + fma, (sb[t] - fy) / 100);
                         }
                         //地面(ブロック)
                         if (stype[t] == 200) {
                             for (t3 = 0; t3 <= sc[t] / 3000; t3++) {
                                 for (t2 = 0; t2 <= sd[t] / 3000; t2++) {
-                                    drawimage(grap[65][1], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + 29 * t2 + fmb);
+                                    drawimage(gameState->graphics[65][BLOCKS], (sa[t] - fx) / 100 + fma + 29 * t3, (sb[t] - fy) / 100 + 29 * t2 + fmb);
                                 }
                             }
                         }
@@ -640,30 +647,15 @@ void rpaint(int *screenType) {
                     xx[14] = 12000;
                     xx[16] = 0;
                     if (atype[t] == 87 || atype[t] == 88) {
-                        if (xx[0] + xx[2] * 100 >= -10 - xx[14] && xx[1] <= fxmax + xx[14] && xx[1] + xx[3] * 100 >= -10 && xx[3] <= fymax) {
+                        if (xx[0] + xx[2] * 100 >= -10 - xx[14] && xx[1] <= screenWidth + xx[14] && xx[1] + xx[3] * 100 >= -10 && xx[3] <= screenHeigh) {
 
                             for (tt = 0; tt <= axtype[t] % 100; tt++) {
-                                xx[26] = 18;
-                                //xd[4] = tt * xx[26] * cos(atm[t] * pai / 180 / 2);
-                                //xd[5] = tt * xx[26] * sin(atm[t] * pai / 180 / 2);
-                                //xx[24] = (int)xd[4];
-                                //xx[25] = (int)xd[5];
-                                xx[24] = (int) (tt * xx[26] * cos(atm[t] * pai / 180 / 2));
-                                xx[25] = (int) (tt * xx[26] * sin(atm[t] * pai / 180 / 2));
-                                //setcolor(230, 120, 0);
-                                xx[23] = 8;
+                                xx[24] = (int)(tt * xx[26] * cos(atm[t] * M_PI / 180 / 2));
+                                xx[25] = (int)(tt * xx[26] * sin(atm[t] * M_PI / 180 / 2));
                                 if (atype[t] == 87) {
-                                    //fillarc(xx[0] / 100 + xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
-                                    //setcolor(0, 0, 0);
-                                    //drawarc(xx[0] / 100 + xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
-                                    drawimage(grap[87][3], xx[0] / 100 + xx[24] - 8, xx[1] / 100 + xx[25] - 8);
+                                    drawimage(gameState->graphics[87][ENEMIES], xx[0] / 100 + xx[24] - 8, xx[1] / 100 + xx[25] - 8);
                                 } else {
-                                    /*
-                                    fillarc(xx[0] / 100 - xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
-                                    setcolor(0, 0, 0);
-                                    drawarc(xx[0] / 100 - xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
-                                    */
-                                    drawimage(grap[87][3], xx[0] / 100 - xx[24] - 8, xx[1] / 100 - xx[25] - 8);
+                                    drawimage(gameState->graphics[87][ENEMIES], xx[0] / 100 - xx[24] - 8, xx[1] / 100 - xx[25] - 8);
                                 }
                             }
                         }
@@ -878,7 +870,7 @@ void rpaint(int *screenType) {
                 //画面黒
                 if (blacktm > 0) {
                     blacktm--;
-                    fillrect(0, 0, fxmax, fymax);
+                    fillrect(0, 0, screenWidth, screenHeigh);
                     if (blacktm == 0) {
                         if (blackx == 1) {
                             zxon = 0;
@@ -915,28 +907,28 @@ void rpaint(int *screenType) {
             break;
         case 10:
             setcolor(0, 0, 0);
-            FillScreen();
+            SDL_FillRect(screen, 0, color);
 
             SetFontSize(16);
             SetFontThickness(4);
 
-            drawimage(grap[0][0], 190, 190);
+            drawimage(gameState->graphics[0][PLAYER], 190, 190);
             DrawFormatString(230, 200, SDL_MapRGB(screen->format, 255, 255, 255), " × %d", nokori);
             break;
         case 100:
             setcolor(160, 180, 250);
-            fillrect(0, 0, fxmax, fymax);
+            fillrect(0, 0, screenWidth, screenHeigh);
 
-            drawimage(mgrap[30], 240 - 380 / 2, 60);
+            drawimage(gameState->graphics[0][TITLE], 240 - 380 / 2, 60);
 
-            drawimage(grap[0][4], 12 * 30, 10 * 29 - 12);
-            drawimage(grap[1][4], 6 * 30, 12 * 29 - 12);
+            drawimage(gameState->graphics[0][BACKGD], 12 * 30, 10 * 29 - 12);
+            drawimage(gameState->graphics[1][BACKGD], 6 * 30, 12 * 29 - 12);
 
             //プレイヤー
-            drawimage(grap[0][0], 2 * 30, 12 * 29 - 12 - 6);
+            drawimage(gameState->graphics[0][PLAYER], 2 * 30, 12 * 29 - 12 - 6);
             for (t = 0; t <= 16; t++) {
-                drawimage(grap[5][1], 29 * t, 13 * 29 - 12);
-                drawimage(grap[6][1], 29 * t, 14 * 29 - 12);
+                drawimage(gameState->graphics[5][BLOCKS], 29 * t, 13 * 29 - 12);
+                drawimage(gameState->graphics[6][BLOCKS], 29 * t, 14 * 29 - 12);
             }
 
             setcolor(0, 0, 0);
@@ -947,9 +939,9 @@ void rpaint(int *screenType) {
 
 } // rpaint()
 
-//メインプログラム
-void Mainprogram(int *screenType) {
-
+//メインプログラム 937-3801
+void Mainprogram(int *screenType, long *timer) {
+    int t, tt, t1, t3;
     // time managing in main function
     // stime = long(SDL_GetTicks());
 
@@ -982,7 +974,7 @@ void Mainprogram(int *screenType) {
             stageonoff = 0;
 
             //チーターマン　入れ
-            bgmchange(otom[1]);
+            bgmchange(gameState->music[1]);
 
             stagecls();
 
@@ -1184,10 +1176,10 @@ void Mainprogram(int *screenType) {
 
             // PlayMusic( "SE/jump.mp3" , DX_PLAYTYPE_NORMAL ) ;
 
-            // PlaySoundMem( oto[1], DX_PLAYTYPE_NORMAL ) ;
+            // PlaySoundMem( gameState->sounds[1], DX_PLAYTYPE_NORMAL ) ;
 
-            // PlaySoundMem( oto[1], DX_PLAYTYPE_BACK) ;
-            ot(oto[1]);
+            // PlaySoundMem( gameState->sounds[1], DX_PLAYTYPE_BACK) ;
+            makeSound(gameState->sounds[1]);
 
             /*
             md=-1040;
@@ -1219,8 +1211,8 @@ void Mainprogram(int *screenType) {
             mtm = 0;
             Mix_HaltChannel(-1);
             Mix_HaltMusic();
-            ot(oto[12]);
-            StopSoundMem(oto[16]);
+            makeSound(gameState->sounds[12]);
+            StopSoundMem(gameState->sounds[16]);
         } // mhp
         // if (mhp<=-10){
         if (mtype == 200) {
@@ -1234,14 +1226,12 @@ void Mainprogram(int *screenType) {
             if (mtm >= 12) {
                 mc = 0;
             }
-            if (mtm >= 100 || fast == 1) {
+            if (mtm >= 100) {
                 zxon = 0;
                 *screenType = 10;
                 mtm = 0;
                 mkeytm = 0;
                 nokori--;
-                if (fast == 1)
-                    mtype = 0;
             } // mtm>=100
         }     // mtype==200
 
@@ -1331,7 +1321,7 @@ void Mainprogram(int *screenType) {
                     if (mtm == 16)
                         mb -= 1100;
                     if (mtm == 20)
-                        ot(oto[10]);
+                        makeSound(gameState->sounds[10]);
 
                     if (mtm >= 24) {
                         ma -= 2000;
@@ -1404,7 +1394,7 @@ void Mainprogram(int *screenType) {
                     zxon = 0;
                     tyuukan = 0;
                     *screenType = 10;
-                    maintm = 0;
+                    *timer = 0;
                 }
             } // mtype==300
 
@@ -1429,7 +1419,7 @@ void Mainprogram(int *screenType) {
                 }
 
                 if (mtm == 200) {
-                    ot(oto[17]);
+                    makeSound(gameState->sounds[17]);
                     if (mtype == 301) {
                         na[nco] = 117 * 29 * 100 - 1100;
                         nb[nco] = 4 * 29 * 100;
@@ -1470,7 +1460,7 @@ void Mainprogram(int *screenType) {
                         zxon = 0;
                         tyuukan = 0;
                         *screenType = 10;
-                        maintm = 0;
+                        *timer = 0;
                     }
                 }
 
@@ -1562,8 +1552,8 @@ void Mainprogram(int *screenType) {
                 ma = 100;
                 mc = 0;
             }
-            if (ma + mnobia > fxmax) {
-                ma = fxmax - mnobia;
+            if (ma + mnobia > screenWidth) {
+                ma = screenWidth - mnobia;
                 mc = 0;
             }
         }
@@ -1587,7 +1577,7 @@ void Mainprogram(int *screenType) {
             xx[3] = 3000; // xx[2]=1000
             xx[8] = ta[t] - fx;
             xx[9] = tb[t] - fy; // xx[15]=0;
-            if (ta[t] - fx + xx[1] >= -10 - xx[3] && ta[t] - fx <= fxmax + 12000 + xx[3]) {
+            if (ta[t] - fx + xx[1] >= -10 - xx[3] && ta[t] - fx <= screenWidth + 12000 + xx[3]) {
                 if (mtype != 200 && mtype != 1 && mtype != 2) {
                     if (ttype[t] < 1000 && ttype[t] != 800 && ttype[t] != 140 && ttype[t] != 141) { // && ttype[t]!=5){
 
@@ -1605,18 +1595,18 @@ void Mainprogram(int *screenType) {
                                         mzimen = 1;
                                         xx[16] = 1;
                                     } else if (ttype[t] == 115) {
-                                        ot(oto[3]);
-                                        eyobi(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
-                                        eyobi(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
-                                        eyobi(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
-                                        eyobi(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
+                                        makeSound(gameState->sounds[3]);
+                                        blockCreation(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
+                                        blockCreation(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
+                                        blockCreation(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
+                                        blockCreation(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
                                         brockbreak(t);
                                     }
                                     // Pスイッチ
                                     else if (ttype[t] == 400) {
                                         md = 0;
                                         ta[t] = -8000000;
-                                        ot(oto[13]);
+                                        makeSound(gameState->sounds[13]);
                                         for (tt = 0; tt < tmax; tt++) {
                                             if (ttype[tt] != 7) {
                                                 ttype[tt] = 800;
@@ -1626,7 +1616,7 @@ void Mainprogram(int *screenType) {
                                     }
                                     //音符+
                                     else if (ttype[t] == 117) {
-                                        ot(oto[14]);
+                                        makeSound(gameState->sounds[14]);
                                         md = -1500;
                                         mtype = 2;
                                         mtm = 0;
@@ -1671,23 +1661,23 @@ void Mainprogram(int *screenType) {
                                         } //}
                                           //壊れる
                                         if (ttype[t] == 1 && mzimen == 0) {
-                                            ot(oto[3]);
-                                            eyobi(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
-                                            eyobi(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
-                                            eyobi(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
-                                            eyobi(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
+                                            makeSound(gameState->sounds[3]);
+                                            blockCreation(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
+                                            blockCreation(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
+                                            blockCreation(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
+                                            blockCreation(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
                                             brockbreak(t);
                                         }
                                         //コイン
                                         if (ttype[t] == 2 && mzimen == 0) {
-                                            ot(oto[4]);
-                                            eyobi(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                                            makeSound(gameState->sounds[4]);
+                                            blockCreation(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
                                             ttype[t] = 3;
                                         }
                                         //隠し
                                         if (ttype[t] == 7) {
-                                            ot(oto[4]);
-                                            eyobi(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                                            makeSound(gameState->sounds[4]);
+                                            blockCreation(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
                                             mb = xx[9] + xx[1] + xx[0];
                                             ttype[t] = 3;
                                             if (md < 0) {
@@ -1740,23 +1730,23 @@ void Mainprogram(int *screenType) {
                     } // && ttype[t]<50
 
                     if (ttype[t] == 800) {
-                        // if (xx[0]+xx[2]>=-xx[14] && xx[0]<=fxmax+xx[14] &&
-                        // xx[1]+xx[3]>=-10-9000 && xx[1]<=fymax+10000){
+                        // if (xx[0]+xx[2]>=-xx[14] && xx[0]<=screenWidth+xx[14] &&
+                        // xx[1]+xx[3]>=-10-9000 && xx[1]<=screenHeigh+10000){
                         if (mb > xx[9] - xx[0] * 2 - 2000 && mb < xx[9] + xx[1] - xx[0] * 2 + 2000 && ma + mnobia > xx[8] - 400 && ma < xx[8] + xx[1]) {
                             ta[t] = -800000;
-                            ot(oto[4]);
+                            makeSound(gameState->sounds[4]);
                         }
                     }
                     //剣とってクリア
                     if (ttype[t] == 140) {
                         if (mb > xx[9] - xx[0] * 2 - 2000 && mb < xx[9] + xx[1] - xx[0] * 2 + 2000 && ma + mnobia > xx[8] - 400 && ma < xx[8] + xx[1]) {
-                            ta[t] = -800000; // ot(oto[4]);
+                            ta[t] = -800000; // makeSound(gameState->sounds[4]);
                             sracttype[20] = 1;
                             sron[20] = 1;
                             Mix_HaltMusic();
                             mtype = 301;
                             mtm = 0;
-                            ot(oto[16]);
+                            makeSound(gameState->sounds[16]);
                         }
                     }
                     //特殊的
@@ -1777,8 +1767,8 @@ void Mainprogram(int *screenType) {
                         }
 
                         if (xx[17] == 1 && txtype[t] == 0) {
-                            ot(oto[4]);
-                            eyobi(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                            makeSound(gameState->sounds[4]);
+                            blockCreation(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
                             ttype[t] = 3;
                         }
                     } // 100
@@ -1786,56 +1776,56 @@ void Mainprogram(int *screenType) {
                     //敵出現
                     if (ttype[t] == 101) { // xx[9]+xx[1]+3000<mb && // && mb>xx[9]-xx[0]*2
                         if (xx[17] == 1) {
-                            ot(oto[8]);
+                            makeSound(gameState->sounds[8]);
                             ttype[t] = 3;
                             abrocktm[aco] = 16;
                             if (txtype[t] == 0)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 0, 0);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 0, 0);
                             if (txtype[t] == 1)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 4, 0);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 4, 0);
                             if (txtype[t] == 3)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 101, 0);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 101, 0);
                             if (txtype[t] == 4) {
                                 abrocktm[aco] = 20;
-                                ayobi(ta[t] - 400, tb[t] - 1600, 0, 0, 0, 6, 0);
+                                entityCreation(ta[t] - 400, tb[t] - 1600, 0, 0, 0, 6, 0);
                             }
                             if (txtype[t] == 10)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 101, 0);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 101, 0);
                         }
                     } // 101
 
                     //おいしいきのこ出現
                     if (ttype[t] == 102) {
                         if (xx[17] == 1) {
-                            ot(oto[8]);
+                            makeSound(gameState->sounds[8]);
                             ttype[t] = 3;
                             abrocktm[aco] = 16;
                             if (txtype[t] == 0)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 100, 0);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 100, 0);
                             if (txtype[t] == 2)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 100, 2);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 100, 2);
                             if (txtype[t] == 3)
-                                ayobi(ta[t], tb[t], 0, 0, 0, 102, 1);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 102, 1);
                         }
                     } // 102
 
                     //まずいきのこ出現
                     if (ttype[t] == 103) {
                         if (xx[17] == 1) {
-                            ot(oto[8]);
+                            makeSound(gameState->sounds[8]);
                             ttype[t] = 3;
                             abrocktm[aco] = 16;
-                            ayobi(ta[t], tb[t], 0, 0, 0, 100, 1);
+                            entityCreation(ta[t], tb[t], 0, 0, 0, 100, 1);
                         }
                     } // 103
 
                     //悪スター出し
                     if (ttype[t] == 104) {
                         if (xx[17] == 1) {
-                            ot(oto[8]);
+                            makeSound(gameState->sounds[8]);
                             ttype[t] = 3;
                             abrocktm[aco] = 16;
-                            ayobi(ta[t], tb[t], 0, 0, 0, 110, 0);
+                            entityCreation(ta[t], tb[t], 0, 0, 0, 110, 0);
                         }
                     } // 104
 
@@ -1850,9 +1840,9 @@ void Mainprogram(int *screenType) {
                         thp[t]++;
                         if (thp[t] >= 16) {
                             thp[t] = 0;
-                            ot(oto[8]);
+                            makeSound(gameState->sounds[8]);
                             abrocktm[aco] = 16;
-                            ayobi(ta[t], tb[t], 0, 0, 0, 102, 1);
+                            entityCreation(ta[t], tb[t], 0, 0, 0, 102, 1);
                         }
                     }
                     //コイン量産
@@ -1869,8 +1859,8 @@ void Mainprogram(int *screenType) {
                         if (thp[t] >= 3) {
                             thp[t] = 0;
                             titem[t]++;
-                            ot(oto[4]);
-                            eyobi(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                            makeSound(gameState->sounds[4]);
+                            blockCreation(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
                             // ttype[t]=3;
                         }
                     }
@@ -1878,14 +1868,14 @@ void Mainprogram(int *screenType) {
                     if (ttype[t] == 114) {
                         if (xx[17] == 1) {
                             if (txtype[t] == 0) {
-                                ot(oto[8]);
+                                makeSound(gameState->sounds[8]);
                                 ttype[t] = 3;
                                 abrocktm[aco] = 16;
-                                ayobi(ta[t], tb[t], 0, 0, 0, 102, 1);
+                                entityCreation(ta[t], tb[t], 0, 0, 0, 102, 1);
                             }
                             if (txtype[t] == 2) {
-                                ot(oto[4]);
-                                eyobi(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                                makeSound(gameState->sounds[4]);
+                                blockCreation(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
                                 ttype[t] = 115;
                                 txtype[t] = 0;
                             }
@@ -1893,7 +1883,7 @@ void Mainprogram(int *screenType) {
                                 if (stageonoff == 1) {
                                     ttype[t] = 130;
                                     stageonoff = 0;
-                                    ot(oto[13]);
+                                    makeSound(gameState->sounds[13]);
                                     txtype[t] = 2;
                                     for (t = 0; t < amax; t++) {
                                         if (atype[t] == 87 || atype[t] == 88) {
@@ -1903,8 +1893,8 @@ void Mainprogram(int *screenType) {
                                         }
                                     }
                                 } else {
-                                    ot(oto[4]);
-                                    eyobi(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                                    makeSound(gameState->sounds[4]);
+                                    blockCreation(ta[t] + 10, tb[t], 0, -800, 0, 40, 3000, 3000, 0, 16);
                                     ttype[t] = 3;
                                 }
                             }
@@ -1919,9 +1909,9 @@ void Mainprogram(int *screenType) {
                     // Pスイッチ
                     if (ttype[t] == 116) {
                         if (xx[17] == 1) {
-                            ot(oto[8]);
-                            // ot(oto[13]);
-                            ttype[t] = 3; // abrocktm[aco]=18;ayobi(ta[t],tb[t],0,0,0,104,1);
+                            makeSound(gameState->sounds[8]);
+                            // makeSound(gameState->sounds[13]);
+                            ttype[t] = 3; // abrocktm[aco]=18;entityCreation(ta[t],tb[t],0,0,0,104,1);
                             tyobi(ta[t] / 100, (tb[t] / 100) - 29, 400);
                         }
                     } // 116
@@ -1929,7 +1919,7 @@ void Mainprogram(int *screenType) {
                     //ファイアバー強化
                     if (ttype[t] == 124) {
                         if (xx[17] == 1) {
-                            ot(oto[13]);
+                            makeSound(gameState->sounds[13]);
                             for (t = 0; t < amax; t++) {
                                 if (atype[t] == 87 || atype[t] == 88) {
                                     if (axtype[t] == 101) {
@@ -1945,13 +1935,13 @@ void Mainprogram(int *screenType) {
                         if (xx[17] == 1) {
                             if (txtype[t] != 1) {
                                 stageonoff = 0;
-                                ot(oto[13]);
+                                makeSound(gameState->sounds[13]);
                             }
                         }
                     } else if (ttype[t] == 131) {
                         if (xx[17] == 1 && txtype[t] != 2) {
                             stageonoff = 1;
-                            ot(oto[13]);
+                            makeSound(gameState->sounds[13]);
                             if (txtype[t] == 1) {
                                 for (t = 0; t < amax; t++) {
                                     if (atype[t] == 87 || atype[t] == 88) {
@@ -1967,7 +1957,7 @@ void Mainprogram(int *screenType) {
                     //ヒント
                     if (ttype[t] == 300) {
                         if (xx[17] == 1) {
-                            ot(oto[15]);
+                            makeSound(gameState->sounds[15]);
                             if (txtype[t] <= 100) {
                                 tmsgtype = 1;
                                 tmsgtm = 15;
@@ -1986,11 +1976,11 @@ void Mainprogram(int *screenType) {
 
                     if (ttype[t] == 301) {
                         if (xx[17] == 1) {
-                            ot(oto[3]);
-                            eyobi(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
-                            eyobi(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
-                            eyobi(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
-                            eyobi(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
+                            makeSound(gameState->sounds[3]);
+                            blockCreation(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
+                            blockCreation(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
+                            blockCreation(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
+                            blockCreation(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
                             brockbreak(t);
                         }
                     } // 300
@@ -1998,11 +1988,11 @@ void Mainprogram(int *screenType) {
                 } else if (mtype == 1) {
                     if (ma + mnobia > xx[8] && ma < xx[8] + xx[1] && mb + mnobib > xx[9] && mb < xx[9] + xx[1]) {
 
-                        ot(oto[3]);
-                        eyobi(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
-                        eyobi(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
-                        eyobi(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
-                        eyobi(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
+                        makeSound(gameState->sounds[3]);
+                        blockCreation(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
+                        blockCreation(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
+                        blockCreation(ta[t] + 1200, tb[t] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
+                        blockCreation(ta[t] + 1200, tb[t] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
                         brockbreak(t);
                     }
                 }
@@ -2028,7 +2018,7 @@ void Mainprogram(int *screenType) {
 
         //壁
         for (t = 0; t < smax; t++) {
-            if (sa[t] - fx + sc[t] >= -12000 && sa[t] - fx <= fxmax) {
+            if (sa[t] - fx + sc[t] >= -12000 && sa[t] - fx <= screenWidth) {
                 xx[0] = 200;
                 xx[1] = 2400;
                 xx[2] = 1000;
@@ -2068,7 +2058,7 @@ void Mainprogram(int *screenType) {
                                 sr[t] = 100;
                         }
 
-                        if (sgtype[t] == 1 && sb[t] <= fymax + 18000) {
+                        if (sgtype[t] == 1 && sb[t] <= screenHeigh + 18000) {
                             sr[t] += 120;
                             if (sr[t] >= 1600) {
                                 sr[t] = 1600;
@@ -2124,34 +2114,34 @@ void Mainprogram(int *screenType) {
                             if (sxtype[t] == 0) {
                                 mtype = 100;
                                 mtm = 0;
-                                ot(oto[7]);
+                                makeSound(gameState->sounds[7]);
                                 mxtype = 0;
                             }
                             //普通
                             if (sxtype[t] == 1) {
                                 mtype = 100;
                                 mtm = 0;
-                                ot(oto[7]);
+                                makeSound(gameState->sounds[7]);
                                 mxtype = 1;
                             }
                             //普通
                             if (sxtype[t] == 2) {
                                 mtype = 100;
                                 mtm = 0;
-                                ot(oto[7]);
+                                makeSound(gameState->sounds[7]);
                                 mxtype = 2;
                             }
                             if (sxtype[t] == 5) {
                                 mtype = 100;
                                 mtm = 0;
-                                ot(oto[7]);
+                                makeSound(gameState->sounds[7]);
                                 mxtype = 5;
                             }
                             // ループ
                             if (sxtype[t] == 6) {
                                 mtype = 100;
                                 mtm = 0;
-                                ot(oto[7]);
+                                makeSound(gameState->sounds[7]);
                                 mxtype = 6;
                             }
                         }
@@ -2164,7 +2154,7 @@ void Mainprogram(int *screenType) {
                             if (sxtype[t] == 0) {
                                 mtype = 500;
                                 mtm = 0;
-                                ot(oto[7]); // mxtype=1;
+                                makeSound(gameState->sounds[7]); // mxtype=1;
                                 mtype = 100;
                                 mxtype = 10;
                             }
@@ -2172,14 +2162,14 @@ void Mainprogram(int *screenType) {
                             if (sxtype[t] == 2) {
                                 mxtype = 3;
                                 mtm = 0;
-                                ot(oto[7]); // mxtype=1;
+                                makeSound(gameState->sounds[7]); // mxtype=1;
                                 mtype = 100;
                             }
                             // ループ
                             if (sxtype[t] == 6) {
                                 mtype = 3;
                                 mtm = 0;
-                                ot(oto[7]);
+                                makeSound(gameState->sounds[7]);
                                 mxtype = 6;
                             }
                         }
@@ -2190,35 +2180,35 @@ void Mainprogram(int *screenType) {
                     if (ma + mnobia > xx[8] + xx[0] && ma < xx[8] + sc[t] - xx[0] && mb + mnobib > xx[9] && mb < xx[9] + sd[t] + xx[0]) {
                         if (stype[t] == 100) {
                             if (sxtype[t] == 0 || (sxtype[t] == 1 && ttype[1] != 3)) {
-                                ayobi(sa[t] + 1000, 32000, 0, 0, 0, 3, 0);
+                                entityCreation(sa[t] + 1000, 32000, 0, 0, 0, 3, 0);
                                 sa[t] = -800000000;
-                                ot(oto[10]);
+                                makeSound(gameState->sounds[10]);
                             }
                         }
                         if (stype[t] == 101) {
-                            ayobi(sa[t] + 6000, -4000, 0, 0, 0, 3, 1);
+                            entityCreation(sa[t] + 6000, -4000, 0, 0, 0, 3, 1);
                             sa[t] = -800000000;
-                            ot(oto[10]);
+                            makeSound(gameState->sounds[10]);
                         }
                         if (stype[t] == 102) {
                             if (sxtype[t] == 0) {
                                 for (t3 = 0; t3 <= 3; t3++) {
-                                    ayobi(sa[t] + t3 * 3000, -3000, 0, 0, 0, 0, 0);
+                                    entityCreation(sa[t] + t3 * 3000, -3000, 0, 0, 0, 0, 0);
                                 }
                             }
                             if (sxtype[t] == 1 && mb >= 16000) {
-                                ayobi(sa[t] + 1500, 44000, 0, -2000, 0, 4, 0);
+                                entityCreation(sa[t] + 1500, 44000, 0, -2000, 0, 4, 0);
                             } else if (sxtype[t] == 2) {
-                                ayobi(sa[t] + 4500, 30000, 0, -1600, 0, 5, 0);
-                                ot(oto[10]);
+                                entityCreation(sa[t] + 4500, 30000, 0, -1600, 0, 5, 0);
+                                makeSound(gameState->sounds[10]);
                                 sxtype[t] = 3;
                                 sa[t] -= 12000;
                             } else if (sxtype[t] == 3) {
                                 sa[t] += 12000;
                                 sxtype[t] = 4;
                             } else if (sxtype[t] == 4) {
-                                ayobi(sa[t] + 4500, 30000, 0, -1600, 0, 5, 0);
-                                ot(oto[10]);
+                                entityCreation(sa[t] + 4500, 30000, 0, -1600, 0, 5, 0);
+                                makeSound(gameState->sounds[10]);
                                 sxtype[t] = 5;
                                 sxtype[t] = 0;
                             }
@@ -2226,11 +2216,11 @@ void Mainprogram(int *screenType) {
                             else if (sxtype[t] == 7) {
                                 mainmsgtype = 1;
                             } else if (sxtype[t] == 8) {
-                                ayobi(sa[t] - 5000 - 3000 * 1, 26000, 0, -1600, 0, 5, 0);
-                                ot(oto[10]);
+                                entityCreation(sa[t] - 5000 - 3000 * 1, 26000, 0, -1600, 0, 5, 0);
+                                makeSound(gameState->sounds[10]);
                             } else if (sxtype[t] == 9) {
                                 for (t3 = 0; t3 <= 2; t3++) {
-                                    ayobi(sa[t] + t3 * 3000 + 3000, 48000, 0, -6000, 0, 3, 0);
+                                    entityCreation(sa[t] + t3 * 3000 + 3000, 48000, 0, -6000, 0, 3, 0);
                                 }
                             }
                             if (sxtype[t] == 10) {
@@ -2240,7 +2230,7 @@ void Mainprogram(int *screenType) {
 
                             if (sxtype[t] == 12) {
                                 for (t3 = 1; t3 <= 3; t3++) {
-                                    ayobi(sa[t] + t3 * 3000 - 1000, 40000, 0, -2600, 0, 9, 0);
+                                    entityCreation(sa[t] + t3 * 3000 - 1000, 40000, 0, -2600, 0, 9, 0);
                                 }
                             }
                             //スクロール消し
@@ -2254,7 +2244,7 @@ void Mainprogram(int *screenType) {
                                 Mix_HaltMusic();
                                 mtype = 302;
                                 mtm = 0;
-                                ot(oto[16]);
+                                makeSound(gameState->sounds[16]);
                             }
 
                             if (sxtype[t] != 3 && sxtype[t] != 4 && sxtype[t] != 10) {
@@ -2266,14 +2256,14 @@ void Mainprogram(int *screenType) {
                             if (sxtype[t] == 0) {
                                 amsgtm[aco] = 10;
                                 amsgtype[aco] = 50;
-                                ayobi(sa[t] + 9000, sb[t] + 2000, 0, 0, 0, 79, 0);
+                                entityCreation(sa[t] + 9000, sb[t] + 2000, 0, 0, 0, 79, 0);
                                 sa[t] = -800000000;
                             }
 
                             if (sxtype[t] == 1 && ttype[6] <= 6) {
                                 amsgtm[aco] = 10;
                                 amsgtype[aco] = 50;
-                                ayobi(sa[t] - 12000, sb[t] + 2000, 0, 0, 0, 79, 0);
+                                entityCreation(sa[t] - 12000, sb[t] + 2000, 0, 0, 0, 79, 0);
                                 sa[t] = -800000000;
                                 txtype[9] = 500; // ttype[9]=1;
                             }
@@ -2281,11 +2271,11 @@ void Mainprogram(int *screenType) {
 
                         if (stype[t] == 104) {
                             if (sxtype[t] == 0) {
-                                ayobi(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 0);
-                                ayobi(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 1);
-                                ayobi(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 2);
-                                ayobi(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 3);
-                                ayobi(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 4);
+                                entityCreation(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 0);
+                                entityCreation(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 1);
+                                entityCreation(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 2);
+                                entityCreation(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 3);
+                                entityCreation(sa[t] + 12000, sb[t] + 2000 + 3000, 0, 0, 0, 79, 4);
                                 sa[t] = -800000000;
                             }
                         }
@@ -2303,7 +2293,7 @@ void Mainprogram(int *screenType) {
                             mtype = 300;
                             mtm = 0;
                             ma = sa[t] - fx - 2000;
-                            ot(oto[11]);
+                            makeSound(gameState->sounds[11]);
                         }
                         //中間ゲート
                         if (stype[t] == 500 && mtype == 0 && mhp >= 1) {
@@ -2316,7 +2306,7 @@ void Mainprogram(int *screenType) {
                         sr[t]++;
                         if (sr[t] >= sgtype[t]) {
                             sr[t] = 0;
-                            ayobi(sa[t], 30000, rand(600) - 300, -1600 - rand(900), 0, 84, 0);
+                            entityCreation(sa[t], 30000, rand(600) - 300, -1600 - rand(900), 0, 84, 0);
                         }
                     }
                 }
@@ -2336,7 +2326,7 @@ void Mainprogram(int *screenType) {
             xx[13] = srd[t];
             xx[8] = xx[10] - fx;
             xx[9] = xx[11] - fy;
-            if (xx[8] + xx[12] >= -10 - 12000 && xx[8] <= fxmax + 12100) {
+            if (xx[8] + xx[12] >= -10 - 12000 && xx[8] <= screenWidth + 12100) {
                 xx[0] = 500;
                 xx[1] = 1200;
                 xx[2] = 1000;
@@ -2378,7 +2368,7 @@ void Mainprogram(int *screenType) {
                         /*
                         case 4:
                         if (srmove[t]==0){srmuki[t]=0;}else{srmuki[t]=1;}
-                        if (sra[t]-fx<-1100-src[t]){sra[t]=fymax+fx+scrollx;}
+                        if (sra[t]-fx<-1100-src[t]){sra[t]=screenHeigh+fx+scrollx;}
                         if (sra[t]-fx>24000+scrollx){sra[t]=-1100-src[t]+fx;}
                         break;
                         */
@@ -2390,9 +2380,9 @@ void Mainprogram(int *screenType) {
                             srmuki[t] = 1;
                         }
                         if (srb[t] - fy < -2100) {
-                            srb[t] = fymax + fy + scrolly + 2000;
+                            srb[t] = screenHeigh + fy + scrolly + 2000;
                         }
-                        if (srb[t] - fy > fymax + scrolly + 2000) {
+                        if (srb[t] - fy > screenHeigh + scrolly + 2000) {
                             srb[t] = -2100 + fy;
                         }
                         break;
@@ -2466,9 +2456,9 @@ void Mainprogram(int *screenType) {
                         }
                         //特殊
                         if (srsp[t] == 1) {
-                            ot(oto[3]);
-                            eyobi(sra[t] + 200, srb[t] - 1000, -240, -1400, 0, 160, 4500, 4500, 2, 120);
-                            eyobi(sra[t] + 4500 - 200, srb[t] - 1000, 240, -1400, 0, 160, 4500, 4500, 3, 120);
+                            makeSound(gameState->sounds[3]);
+                            blockCreation(sra[t] + 200, srb[t] - 1000, -240, -1400, 0, 160, 4500, 4500, 2, 120);
+                            blockCreation(sra[t] + 4500 - 200, srb[t] - 1000, 240, -1400, 0, 160, 4500, 4500, 3, 120);
                             sra[t] = -70000000;
                         }
 
@@ -2577,7 +2567,7 @@ void Mainprogram(int *screenType) {
             xx[3] = enobib[t] / 100;
             if (etm[t] >= 0)
                 etm[t]--;
-            if (xx[0] + xx[2] * 100 >= -10 && xx[1] <= fxmax && xx[1] + xx[3] * 100 >= -10 - 8000 && xx[3] <= fymax && etm[t] >= 0) {
+            if (xx[0] + xx[2] * 100 >= -10 && xx[1] <= screenWidth && xx[1] + xx[3] * 100 >= -10 - 8000 && xx[3] <= screenHeigh && etm[t] >= 0) {
                 ea[t] += ec[t];
                 eb[t] += ed[t];
                 ec[t] += ee[t];
@@ -2601,7 +2591,7 @@ void Mainprogram(int *screenType) {
                     xx[0] = 0;
                     xx[1] = 0;
 
-                    if (bz[t] == 0 && btm[t] < 0 && ba[t] - fx >= fxmax + 2000 && ba[t] - fx < fxmax + 2000 + mc && tt == 0) {
+                    if (bz[t] == 0 && btm[t] < 0 && ba[t] - fx >= screenWidth + 2000 && ba[t] - fx < screenWidth + 2000 + mc && tt == 0) {
                         xx[0] = 1;
                         amuki[aco] = 0;
                     } // && facingRight==1
@@ -2610,7 +2600,7 @@ void Mainprogram(int *screenType) {
                         xx[1] = 1;
                         amuki[aco] = 1;
                     } // && facingRight==0
-                    if (bz[t] == 1 && ba[t] - fx >= 0 - anx[btype[t]] && ba[t] - fx <= fxmax + 4000 && bb[t] - fy >= -9000 && bb[t] - fy <= fymax + 4000 && btm[t] < 0) {
+                    if (bz[t] == 1 && ba[t] - fx >= 0 - anx[btype[t]] && ba[t] - fx <= screenWidth + 4000 && bb[t] - fy >= -9000 && bb[t] - fy <= screenHeigh + 4000 && btm[t] < 0) {
                         xx[0] = 1;
                         bz[t] = 0;
                     } // && xza<=5000// && tyuukan!=1
@@ -2625,7 +2615,7 @@ void Mainprogram(int *screenType) {
                             btm[t] = 9999999;
                         }
                         // 10
-                        ayobi(ba[t], bb[t], 0, 0, 0, btype[t], bxtype[t]);
+                        entityCreation(ba[t], bb[t], 0, 0, 0, btype[t], bxtype[t]);
                     }
 
                 } // tt
@@ -2641,7 +2631,7 @@ void Mainprogram(int *screenType) {
             xx[14] = 12000 * 1;
             if (anotm[t] >= 0)
                 anotm[t]--;
-            if (xx[0] + xx[2] >= -xx[14] && xx[0] <= fxmax + xx[14] && xx[1] + xx[3] >= -10 - 9000 && xx[1] <= fymax + 20000) {
+            if (xx[0] + xx[2] >= -xx[14] && xx[0] <= screenWidth + xx[14] && xx[1] + xx[3] >= -10 - 9000 && xx[1] <= screenHeigh + 20000) {
                 aacta[t] = 0;
                 aactb[t] = 0;
 
@@ -2677,7 +2667,7 @@ void Mainprogram(int *screenType) {
                                 if (t != tt) {
                                     if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
                                         aa[tt] = -800000;
-                                        ot(oto[6]);
+                                        makeSound(gameState->sounds[6]);
                                     }
                                 }
                             }
@@ -2767,11 +2757,11 @@ void Mainprogram(int *screenType) {
                             }
 
                             if (atm[t] == 100) {
-                                eyobi(aa[t] + 1200 - 1200, ab[t] + 3000 - 10 * 3000 - 1500, 0, 0, 0, 0, 1000, 10 * 3000 - 1200, 4, 20);
+                                blockCreation(aa[t] + 1200 - 1200, ab[t] + 3000 - 10 * 3000 - 1500, 0, 0, 0, 0, 1000, 10 * 3000 - 1200, 4, 20);
                                 if (mtype == 300) {
                                     mtype = 0;
-                                    StopSoundMem(oto[11]);
-                                    bgmchange(otom[1]);
+                                    StopSoundMem(gameState->sounds[11]);
+                                    bgmchange(gameState->music[1]);
                                 }
                                 for (t1 = 0; t1 < smax; t1++) {
                                     if (stype[t1] == 104)
@@ -2779,7 +2769,7 @@ void Mainprogram(int *screenType) {
                                 }
                             }
                             if (atm[t] == 120) {
-                                eyobi(aa[t] + 1200 - 1200, ab[t] + 3000 - 10 * 3000 - 1500, 600, -1200, 0, 160, 1000, 10 * 3000 - 1200, 4, 240);
+                                blockCreation(aa[t] + 1200 - 1200, ab[t] + 3000 - 10 * 3000 - 1500, 600, -1200, 0, 160, 1000, 10 * 3000 - 1200, 4, 240);
                                 amuki[t] = 1;
                             }
                             // mc=700;mkeytm=24;md=-1200;mb=xx[1]-1000-3000;amuki[t]=1;if
@@ -2864,11 +2854,11 @@ void Mainprogram(int *screenType) {
                         azimentype[t] = 5;
                         ab[t] += ad[t];
                         ad[t] += 100;
-                        if (ab[t] >= fymax + 1000) {
+                        if (ab[t] >= screenHeigh + 1000) {
                             ad[t] = 900;
                         }
-                        if (ab[t] >= fymax + 12000) {
-                            ab[t] = fymax;
+                        if (ab[t] >= screenHeigh + 12000) {
+                            ab[t] = screenHeigh;
                             ad[t] = -2600;
                         }
                         break;
@@ -3005,8 +2995,8 @@ void Mainprogram(int *screenType) {
 
                         for (tt = 0; tt <= axtype[t] % 100; tt++) {
                             xx[26] = 18;
-                            xd[4] = tt * xx[26] * cos(atm[t] * pai / 180 / 2);
-                            xd[5] = tt * xx[26] * sin(atm[t] * pai / 180 / 2);
+                            xd[4] = tt * xx[26] * cos(atm[t] * M_PI / 180 / 2);
+                            xd[5] = tt * xx[26] * sin(atm[t] * M_PI / 180 / 2);
 
                             xx[4] = 1800;
                             xx[5] = 800;
@@ -3037,8 +3027,8 @@ void Mainprogram(int *screenType) {
 
                         for (tt = 0; tt <= axtype[t] % 100; tt++) {
                             xx[26] = 18;
-                            xd[4] = -tt * xx[26] * cos(atm[t] * pai / 180 / 2);
-                            xd[5] = tt * xx[26] * sin(atm[t] * pai / 180 / 2);
+                            xd[4] = -tt * xx[26] * cos(atm[t] * M_PI / 180 / 2);
+                            xd[5] = tt * xx[26] * sin(atm[t] * M_PI / 180 / 2);
 
                             xx[4] = 1800;
                             xx[5] = 800;
@@ -3076,13 +3066,13 @@ void Mainprogram(int *screenType) {
                                 if (t != tt) {
                                     if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12]) {
                                         if (atype[tt] == 0 || atype[tt] == 4) {
-                                            atype[tt] = 90; // ot(oto[6]);
+                                            atype[tt] = 90; // makeSound(gameState->sounds[6]);
                                             anobia[tt] = 6400;
                                             anobib[tt] = 6300;
                                             axtype[tt] = 0;
                                             aa[tt] -= 1050;
                                             ab[tt] -= 1050;
-                                            ot(oto[9]);
+                                            makeSound(gameState->sounds[9]);
                                             aa[t] = -80000000;
                                         }
                                     }
@@ -3284,7 +3274,7 @@ void Mainprogram(int *screenType) {
 
                     //地面判定
                     if (azimentype[t] != 2) {
-                        tekizimen();
+                        tekizimen(t);
                     }
 
                 } // azimentype[t]>=1
@@ -3326,7 +3316,7 @@ void Mainprogram(int *screenType) {
                             if (axtype[t] == 0)
                                 aa[t] = -900000;
                             if (axtype[t] == 1) {
-                                ot(oto[5]);
+                                makeSound(gameState->sounds[5]);
                                 mb = xx[9] - 900 - anobib[t];
                                 md = -2100;
                                 xx[25] = 1;
@@ -3377,14 +3367,14 @@ void Mainprogram(int *screenType) {
 
                         if (atype[t] != 85) {
                             if (xx[25] == 0) {
-                                ot(oto[5]);
+                                makeSound(gameState->sounds[5]);
                                 mb = xx[9] - 1000 - anobib[t];
                                 md = -1000;
                             }
                         }
                         if (atype[t] == 85) {
                             if (xx[25] == 0) {
-                                ot(oto[5]);
+                                makeSound(gameState->sounds[5]);
                                 mb = xx[9] - 4000;
                                 md = -1000;
                                 axtype[t] = 5;
@@ -3534,17 +3524,17 @@ void Mainprogram(int *screenType) {
                         if (atype[t] == 100 && axtype[t] == 0) {
                             mmsgtm = 30;
                             mmsgtype = 1;
-                            ot(oto[9]);
+                            makeSound(gameState->sounds[9]);
                         }
                         if (atype[t] == 100 && axtype[t] == 1) {
                             mmsgtm = 30;
                             mmsgtype = 2;
-                            ot(oto[9]);
+                            makeSound(gameState->sounds[9]);
                         }
                         if (atype[t] == 100 && axtype[t] == 2) {
                             mnobia = 5200;
                             mnobib = 7300;
-                            ot(oto[9]);
+                            makeSound(gameState->sounds[9]);
                             ma -= 1100;
                             mb -= 4000;
                             mtype = 1;
@@ -3564,22 +3554,22 @@ void Mainprogram(int *screenType) {
                         //?ボール
                         if (atype[t] == 105) {
                             if (axtype[t] == 0) {
-                                ot(oto[4]);
+                                makeSound(gameState->sounds[4]);
                                 sgtype[26] = 6;
                             }
                             if (axtype[t] == 1) {
                                 txtype[7] = 80;
-                                ot(oto[4]);
+                                makeSound(gameState->sounds[4]);
 
-                                // ayobi(aa[t]-6*3000+1000,-3*3000,0,0,0,110,0);
-                                ayobi(aa[t] - 8 * 3000 - 1000, -4 * 3000, 0, 0, 0, 110, 0);
-                                ayobi(aa[t] - 10 * 3000 + 1000, -1 * 3000, 0, 0, 0, 110, 0);
+                                // entityCreation(aa[t]-6*3000+1000,-3*3000,0,0,0,110,0);
+                                entityCreation(aa[t] - 8 * 3000 - 1000, -4 * 3000, 0, 0, 0, 110, 0);
+                                entityCreation(aa[t] - 10 * 3000 + 1000, -1 * 3000, 0, 0, 0, 110, 0);
 
-                                ayobi(aa[t] + 4 * 3000 + 1000, -2 * 3000, 0, 0, 0, 110, 0);
-                                ayobi(aa[t] + 5 * 3000 - 1000, -3 * 3000, 0, 0, 0, 110, 0);
-                                ayobi(aa[t] + 6 * 3000 + 1000, -4 * 3000, 0, 0, 0, 110, 0);
-                                ayobi(aa[t] + 7 * 3000 - 1000, -2 * 3000, 0, 0, 0, 110, 0);
-                                ayobi(aa[t] + 8 * 3000 + 1000, -2 * 3000 - 1000, 0, 0, 0, 110, 0);
+                                entityCreation(aa[t] + 4 * 3000 + 1000, -2 * 3000, 0, 0, 0, 110, 0);
+                                entityCreation(aa[t] + 5 * 3000 - 1000, -3 * 3000, 0, 0, 0, 110, 0);
+                                entityCreation(aa[t] + 6 * 3000 + 1000, -4 * 3000, 0, 0, 0, 110, 0);
+                                entityCreation(aa[t] + 7 * 3000 - 1000, -2 * 3000, 0, 0, 0, 110, 0);
+                                entityCreation(aa[t] + 8 * 3000 + 1000, -2 * 3000 - 1000, 0, 0, 0, 110, 0);
                                 tb[0] += 3000 * 3;
                             }
                         } // 105
@@ -3595,7 +3585,7 @@ void Mainprogram(int *screenType) {
                         if (atype[t]==102){mhp-=1;mmutekitm=20;}
                         if (atype[t]==103){
                         //xx[24]=2400;
-                        eyobi(aa[t]-500,ab[t],0,-600,0,80,2500,1600,2,32);
+                        blockCreation(aa[t]-500,ab[t],0,-600,0,80,2500,1600,2,32);
                         }
                         if (atype[t]==104){mztm=120;mztype=1;}
                         if (atype[t]==105){mztm=160;mztype=2;}
@@ -3645,7 +3635,7 @@ void Mainprogram(int *screenType) {
 
     //スタッフロール
     if (*screenType == 2) {
-        maintm++;
+        (*timer)++;
 
         xx[7] = 46;
         if (CheckHitKey(KEY_INPUT_1) == 1) {
@@ -3657,9 +3647,9 @@ void Mainprogram(int *screenType) {
             }
         }
 
-        if (maintm <= 1) {
-            maintm = 2;
-            bgmchange(otom[5]);
+        if (*timer <= 1) {
+            *timer = 2;
+            bgmchange(gameState->music[5]);
             xx[10] = 0;
             for (t = 0; t <= xx[7]; t += 1) {
                 xx[12 + t] = 980000;
@@ -3699,24 +3689,22 @@ void Mainprogram(int *screenType) {
         } // t
 
         if (xx[30] == -200) {
-            bgmchange(otom[5]);
+            bgmchange(gameState->music[5]);
         }
         if (xx[30] <= -400) {
             *screenType = 100;
             nokori = 2;
-            maintm = 0;
+            *timer = 0;
             ending = 0;
         }
 
     } // screenType==2
 
     if (*screenType == 10) {
-        maintm++;
+        (*timer)++;
 
-        if (fast == 1)
-            maintm += 2;
-        if (maintm >= 30) {
-            maintm = 0;
+        if (*timer >= 30) {
+            *timer = 0;
             *screenType = 1;
             zxon = 0;
         }
@@ -3724,10 +3712,10 @@ void Mainprogram(int *screenType) {
 
     //タイトル
     if (*screenType == 100) {
-        maintm++;
+        (*timer)++;
         xx[0] = 0;
-        if (maintm <= 10) {
-            maintm = 11;
+        if (*timer <= 10) {
+            *timer = 11;
             sta = 1;
             stb = 1;
             stc = 0;
@@ -3796,28 +3784,24 @@ void Mainprogram(int *screenType) {
         if (xx[0] == 1) {
             *screenType = 10;
             zxon = 0;
-            maintm = 0;
+            *timer = 0;
             nokori = 2;
 
-            fast = 0;
             trap = 0;
             tyuukan = 0;
         }
 
     } // 100
 
-    //描画
-    rpaint(screenType);
-
     // wait(20);
 
 } // Mainprogram()
 
-void tekizimen() {
-
+void tekizimen(int t) {
+    int tt;
     //壁
     for (tt = 0; tt < smax; tt++) {
-        if (sa[tt] - fx + sc[tt] >= -12010 && sa[tt] - fx <= fxmax + 12100 && stype[tt] <= 99) {
+        if (sa[tt] - fx + sc[tt] >= -12010 && sa[tt] - fx <= screenWidth + 12100 && stype[tt] <= 99) {
             xx[0] = 200;
             xx[2] = 1000;
             xx[1] = 2000; // anobia[t]
@@ -3857,7 +3841,7 @@ void tekizimen() {
         xx[2] = 1000;
         xx[8] = ta[tt] - fx;
         xx[9] = tb[tt] - fy;
-        if (ta[tt] - fx + xx[1] >= -12010 && ta[tt] - fx <= fxmax + 12000) {
+        if (ta[tt] - fx + xx[1] >= -12010 && ta[tt] - fx <= screenWidth + 12000) {
             if (atype[t] != 86 && atype[t] != 90 && ttype[tt] != 140) {
 
                 //上
@@ -3910,15 +3894,15 @@ void tekizimen() {
                     //こうらブレイク
                     if (xx[27] == 1 && (ttype[tt] == 7 || ttype[tt] == 1) && atype[t] == 2) {
                         if (ttype[tt] == 7) {
-                            ot(oto[4]);
+                            makeSound(gameState->sounds[4]);
                             ttype[tt] = 3;
-                            eyobi(ta[tt] + 10, tb[tt], 0, -800, 0, 40, 3000, 3000, 0, 16);
+                            blockCreation(ta[tt] + 10, tb[tt], 0, -800, 0, 40, 3000, 3000, 0, 16);
                         } else if (ttype[tt] == 1) {
-                            ot(oto[3]);
-                            eyobi(ta[tt] + 1200, tb[tt] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
-                            eyobi(ta[tt] + 1200, tb[tt] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
-                            eyobi(ta[tt] + 1200, tb[tt] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
-                            eyobi(ta[tt] + 1200, tb[tt] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
+                            makeSound(gameState->sounds[3]);
+                            blockCreation(ta[tt] + 1200, tb[tt] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
+                            blockCreation(ta[tt] + 1200, tb[tt] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
+                            blockCreation(ta[tt] + 1200, tb[tt] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
+                            blockCreation(ta[tt] + 1200, tb[tt] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
                             brockbreak(tt);
                         }
                     }
@@ -3926,11 +3910,11 @@ void tekizimen() {
             }
             if (atype[t] == 86 || atype[t] == 90) {
                 if (aa[t] + anobia[t] - fx > xx[8] && aa[t] - fx < xx[8] + xx[1] && ab[t] + anobib[t] - fy > xx[9] && ab[t] - fy < xx[9] + xx[1]) {
-                    ot(oto[3]);
-                    eyobi(ta[tt] + 1200, tb[tt] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
-                    eyobi(ta[tt] + 1200, tb[tt] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
-                    eyobi(ta[tt] + 1200, tb[tt] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
-                    eyobi(ta[tt] + 1200, tb[tt] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
+                    makeSound(gameState->sounds[3]);
+                    blockCreation(ta[tt] + 1200, tb[tt] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
+                    blockCreation(ta[tt] + 1200, tb[tt] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
+                    blockCreation(ta[tt] + 1200, tb[tt] + 1200, 240, -1400, 0, 160, 1000, 1000, 1, 120);
+                    blockCreation(ta[tt] + 1200, tb[tt] + 1200, -240, -1400, 0, 160, 1000, 1000, 1, 120);
                     brockbreak(tt);
                 }
             } // 90
@@ -3938,7 +3922,7 @@ void tekizimen() {
         //剣とってクリア
         if (ttype[tt] == 140) {
             if (ab[t] - fy > xx[9] - xx[0] * 2 - 2000 && ab[t] - fy < xx[9] + xx[1] - xx[0] * 2 + 2000 && aa[t] + anobia[t] - fx > xx[8] - 400 && aa[t] - fx < xx[8] + xx[1]) {
-                ta[tt] = -800000; // ot(oto[4]);
+                ta[tt] = -800000; // makeSound(gameState->sounds[4]);
                 sracttype[20] = 1;
                 sron[20] = 1;
             }
@@ -3952,58 +3936,12 @@ int rand(int Rand) {
     return rand() % Rand;
 }
 
-//終了
-void deinit() {
-    setcolor(0, 0, 0);
-    FillScreen();
-    DrawString(200, 200, "EXITING...", SDL_MapRGB(screen->format, 255, 255, 255));
-    SDL_Flip(screen);
-
-    // SURFACES
-    for (t = 0; t < 51; t++)
-        SDL_FreeSurface(mgrap[t]);
-    for (int i = 0; i < 161; i++)
-        for (int j = 0; j < 8; j++)
-            SDL_FreeSurface(grap[i][j]);
-    //--
-
-    // SOUNDS
-    for (int i = 1; i < 6; i++)
-        Mix_FreeMusic(otom[i]);
-    for (int i = 1; i < 19; i++)
-        Mix_FreeChunk(oto[i]);
-    //--
-
-    // Font
-    for (int i = 0; i < FONT_MAX; i++)
-        TTF_CloseFont(font[i]);
-
-    // Joystick
-    SDL_JoystickClose(joystick);
-
-    // Close libraries
-    IMG_Quit();
-    TTF_Quit();
-    Mix_Quit();
-    SDL_Quit();
-}
-
 //画像関係
 //{
 //色かえ(指定)
 void setcolor(int red, int green, int blue) {
     color = SDL_MapRGB(screen->format, red, green, blue);
     gfxcolor = red << 8 * 3 | green << 8 * 2 | blue << 8 | 0xFF;
-}
-
-//点
-void drawpixel(int a, int b) {
-    pixelColor(screen, a, b, gfxcolor);
-}
-
-//線
-void drawline(int a, int b, int c, int d) {
-    lineColor(screen, a, b, c, d, gfxcolor);
 }
 
 //四角形(塗り無し)
@@ -4026,36 +3964,12 @@ void fillarc(int a, int b, int c, int d) {
     filledEllipseColor(screen, a, b, c, d, gfxcolor);
 }
 
-void FillScreen() {
-    SDL_FillRect(screen, 0, color);
-}
-
-//画像の読み込み
-SDL_Surface *loadimage(string x) {
-    // mgrap[a]=LoadGraph(b);
-    return LoadGraph(x.c_str());
-}
-
-SDL_Surface *loadimage(SDL_Surface *a, int x, int y, int r, int z) {
-    return DerivationGraph(x, y, r, z, a);
-}
-
 //画像表示
 void drawimage(SDL_Surface *mx, int a, int b) {
     if (mirror == 0)
         DrawGraph(a, b, mx);
     if (mirror == 1)
         DrawTurnGraph(a, b, mx);
-}
-
-void drawimage(SDL_Surface *mx, int a, int b, int c, int d, int e, int f) {
-    SDL_Surface *m;
-    m = DerivationGraph(c, d, e, f, mx);
-    if (mirror == 0)
-        DrawGraph(a, b, m);
-    if (mirror == 1)
-        DrawTurnGraph(a, b, m);
-    SDL_FreeSurface(m);
 }
 
 /*
@@ -4114,11 +4028,12 @@ void setfont(int a) {
 }
 
 //音楽再生
-void ot(Mix_Chunk *x) {
+void makeSound(Mix_Chunk *x) {
     PlaySoundMem(x, DX_PLAYTYPE_BACK);
 }
 
 void stagecls() {
+    int t;
     for (t = 0; t < smax; t++) {
         sa[t] = -9000000;
         sb[t] = 1;
@@ -4213,7 +4128,7 @@ void stagecls() {
 
 //ステージロード
 void stage() {
-
+    int t, tt;
     // fzx=6000*100;
     scrollx = 3600 * 100;
 
@@ -4227,8 +4142,7 @@ void stage() {
     for (tt = 0; tt <= 1000; tt++) {
         for (t = 0; t <= 16; t++) {
             xx[10] = 0;
-            if (stagedate[t][tt] >= 1 && stagedate[t][tt] <= 255)
-                xx[10] = (int)stagedate[t][tt];
+            xx[10] = (int)stagedate[t][tt];
             xx[21] = tt * 29;
             xx[22] = t * 29 - 12;
             xx[23] = xx[10];
@@ -4334,7 +4248,7 @@ void stage() {
         xx[17] = 0;
         for (t = 0; t < smax; t++) {
             if (stype[t] == 500 && tyuukan >= 1) {
-                fx = sa[t] - fxmax / 2;
+                fx = sa[t] - screenWidth / 2;
                 fzx = fx;
                 ma = sa[t] - fx;
                 mb = sb[t] - fy;
@@ -4351,7 +4265,7 @@ void stage() {
 } // stage()
 
 void stagep() {
-
+    int t, tt;
     //ステージロード
     // void stage(){
 
@@ -4502,8 +4416,8 @@ void stagep() {
 
         //マリ　地上　入れ
         // Mix_HaltMusic();
-        bgmchange(otom[1]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+        bgmchange(gameState->music[1]);
+        // PlaySoundMem(gameState->sounds[0],DX_PLAYTYPE_LOOP) ;
 
         scrollx = 0 * 100;
         // ma=3000;mb=3000;
@@ -4580,7 +4494,7 @@ void stagep() {
     if (sta == 1 && stb == 2 && stc == 1) {
 
         //マリ　地下　入れ
-        bgmchange(otom[2]);
+        bgmchange(gameState->music[2]);
 
         scrollx = 4080 * 100;
         ma = 6000;
@@ -4880,8 +4794,8 @@ void stagep() {
 
         //マリ　地上　入れ
         // Mix_HaltMusic();
-        bgmchange(otom[1]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+        bgmchange(gameState->music[1]);
+        // PlaySoundMem(gameState->sounds[0],DX_PLAYTYPE_LOOP) ;
 
         scrollx = 900 * 100;
         ma = 7500;
@@ -4962,8 +4876,8 @@ void stagep() {
     if (sta == 1 && stb == 3 && stc == 0) {
 
         // Mix_HaltMusic();
-        bgmchange(otom[1]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+        bgmchange(gameState->music[1]);
+        // PlaySoundMem(gameState->sounds[0],DX_PLAYTYPE_LOOP) ;
 
         scrollx = 3900 * 100;
         // ma=3000;mb=3000;
@@ -5214,250 +5128,28 @@ void stagep() {
 
         //マリ　地上　入れ
         // Mix_HaltMusic();
-        bgmchange(otom[2]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+        bgmchange(gameState->music[2]);
+        // PlaySoundMem(gameState->sounds[0],DX_PLAYTYPE_LOOP) ;
 
         scrollx = 0 * 100;
         ma = 6000;
         mb = 6000;
         stagecolor = 2;
 
-        byte stagedatex[17][1001] = {{
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                         1,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                     },
+        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
                                      {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                         0,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                         0,
-                                     },
-                                     {
-                                         1,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         1,
-                                         0,
-                                     },
-                                     {
-                                         1,
-                                         54,
-                                         0,
-                                         54,
-                                         0,
-                                         54,
-                                         0,
-                                         54,
-                                         0,
-                                         54,
-                                         0,
-                                         54,
-                                         0,
-                                         54,
-                                         0,
-                                         54,
-                                         1,
-                                         0,
-                                     },
-                                     {
-                                         5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 8, 8, 8, 8,
-                                     },
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+                                     {1, 54, 0, 54, 0, 54, 0, 54, 0, 54, 0, 54, 0, 54, 0, 54, 1, 0},
+                                     {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 8, 8, 8, 8},
                                      {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -5481,7 +5173,7 @@ void stagep() {
     if (sta == 1 && stb == 3 && stc == 5) {
 
         stagecolor = 3;
-        bgmchange(otom[3]);
+        bgmchange(gameState->music[3]);
 
         scrollx = 0 * 100;
         ma = 3000;
@@ -5490,190 +5182,19 @@ void stagep() {
         stagepoint = 1;
 
         byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                                      {0, 0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0, 0},
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         9,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                         0,
-                                     },
-                                     {
-                                         8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 8, 8, 8, 8, 8,
-                                     },
+                                     {0, 0, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0},
+                                     {0, 0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 8, 8, 8, 8, 8},
                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -5714,16 +5235,17 @@ void stagep() {
 
         //マリ　地上　入れ
         // Mix_HaltMusic();
-        bgmchange(otom[4]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+        bgmchange(gameState->music[4]);
+        // PlaySoundMem(gameState->sounds[0],DX_PLAYTYPE_LOOP) ;
 
         scrollx = 4400 * 100;
         ma = 12000;
         mb = 6000;
         stagecolor = 4;
 
+        //中間
         byte stagedatex[17][1001] = {
-            //                                                                                                                                                                                     中間
+
             {5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -6015,7 +5537,7 @@ void stagep() {
     if (sta == 2 && stb == 1 && stc == 0) { // 2-1
         ma = 5600;
         mb = 32000;
-        bgmchange(otom[1]);
+        bgmchange(gameState->music[1]);
         stagecolor = 1;
         scrollx = 2900 * (113 - 19);
         //
@@ -6160,7 +5682,7 @@ void stagep() {
     }
 
     if (sta == 2 && stb == 2 && stc == 0) { // 2-2(地上)
-        bgmchange(otom[1]);
+        bgmchange(gameState->music[1]);
         stagecolor = 1;
         scrollx = 2900 * (19 - 19);
         //
@@ -6210,7 +5732,7 @@ void stagep() {
     }
 
     if (sta == 2 && stb == 2 && stc == 1) { // 2-2(地下)
-        bgmchange(otom[2]);
+        bgmchange(gameState->music[2]);
         stagecolor = 2;
         ma = 7500;
         mb = 9000;
@@ -6437,7 +5959,7 @@ void stagep() {
 
     if (sta == 2 && stb == 2 && stc == 2) { // 2-2 地上
                                             //
-        bgmchange(otom[1]);
+        bgmchange(gameState->music[1]);
         stagecolor = 1;
         scrollx = 2900 * (36 - 19);
         ma = 7500;
@@ -6536,7 +6058,7 @@ void stagep() {
     if (sta == 2 && stb == 3 && stc == 0) { // 2-3
         ma = 7500;
         mb = 3000 * 8;
-        bgmchange(otom[1]);
+        bgmchange(gameState->music[1]);
         stagecolor = 1;
         scrollx = 2900 * (126 - 19);
         //
@@ -6677,7 +6199,7 @@ void stagep() {
             mb = 3000 * 11;
             stc = 0;
         }
-        bgmchange(otom[4]);
+        bgmchange(gameState->music[4]);
         stagecolor = 4;
         scrollx = 2900 * (40 - 19);
         //
@@ -6760,7 +6282,7 @@ void stagep() {
     if (sta == 2 && stb == 4 && stc == 1) { // 2-4(2番)
         ma = 4500;
         mb = 3000 * 11;
-        bgmchange(otom[4]);
+        bgmchange(gameState->music[4]);
         stagecolor = 4;
         scrollx = 2900 * (21 - 19);
         //
@@ -6826,7 +6348,7 @@ void stagep() {
     if (sta == 2 && stb == 4 && stc == 2) { // 2-4(3番)
         ma = 4500;
         mb = 3000 * 11;
-        bgmchange(otom[5]); // 6
+        bgmchange(gameState->music[5]); // 6
         stagecolor = 4;
         scrollx = 2900 * (128 - 19);
         //
@@ -7086,7 +6608,7 @@ void stagep() {
     if (sta == 3 && stb == 1 && stc == 0) { // 3-1
         ma = 5600;
         mb = 32000;
-        bgmchange(otom[1]);
+        bgmchange(gameState->music[1]);
         stagecolor = 5;
         scrollx = 2900 * (112 - 19);
         byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -7213,11 +6735,9 @@ void stagep() {
 // BGM変更
 void bgmchange(Mix_Music *x) {
     Mix_HaltMusic();
-    // otom[0]=0;
-    otom[0] = x;
-    Mix_PlayMusic(otom[0], -1);
-    ;
-    if (x == otom[2])
+    gameState->music[0] = x;
+    Mix_PlayMusic(gameState->music[0], -1);
+    if (x == gameState->music[2])
         Mix_VolumeMusic(MIX_MAX_VOLUME * 40 / 100);
     else
         Mix_VolumeMusic(MIX_MAX_VOLUME * 50 / 100);
@@ -7239,11 +6759,11 @@ void tyobi(int x, int y, int type) {
 //ブロック破壊
 void brockbreak(int t) {
     if (titem[t] == 1) {
-        // eyobi(ta[t],tb[t],0,-800,0,80,xx[1],xx[1],titem[t],8);
+        // blockCreation(ta[t],tb[t],0,-800,0,80,xx[1],xx[1],titem[t],8);
         // hosico++;
     }
     if (titem[t] >= 2 && titem[t] <= 7) {
-        // ayobi(ta[t],tb[t],-800,10,100+(titem[t]-2),0);//end();
+        // entityCreation(ta[t],tb[t],-800,10,10+(titem[t]-2),0);//end();
     }
 
     ta[t] = -800000;
@@ -7356,14 +6876,13 @@ void ttmsg() {
         }
     }
 
-} // ttmsg
+}
 
 void txmsg(string x, int a) {
     int xx = 6;
-
     str(x, 60 + xx, 40 + xx + a * 24);
 
-} // txmsg
+}
 
 //フォント変更
 void setfont(int x, int y) {
@@ -7372,8 +6891,7 @@ void setfont(int x, int y) {
 }
 
 //グラ作成
-void eyobi(int xa, int xb, int xc, int xd, int xe, int xf, int xnobia, int xnobib, int xgtype, int xtm) {
-
+void blockCreation(int xa, int xb, int xc, int xd, int xe, int xf, int xnobia, int xnobib, int xgtype, int xtm) {
     ea[eco] = xa;
     eb[eco] = xb;
     ec[eco] = xc;
@@ -7388,32 +6906,29 @@ void eyobi(int xa, int xb, int xc, int xd, int xe, int xf, int xnobia, int xnobi
     eco++;
     if (eco >= emax)
         eco = 0;
-
-} // eyobi
+}
 
 //敵キャラ、アイテム作成
-void ayobi(int xa, int xb, int xc, int xd, int xnotm, int xtype, int xxtype) {
-    int rz = 0;
-    for (t1 = 0; t1 <= 1; t1++) {
-        t1 = 2;
+void entityCreation(int xa, int xb, int xc, int xd, int xnotm, int xtype, int xxtype) {
+    int i, rz = 0;
+    for (i = 0; i <= 1; i++) {
+        i = 2;
         if (aa[aco] >= -9000 && aa[aco] <= 30000)
-            t1 = 0;
+            i = 0;
         rz++;
 
         if (rz <= amax) {
-            t1 = 3;
+            i = 3;
 
             aa[aco] = xa;
-            ab[aco] = xb; // ag[aco]=0;ah[aco]=0;ai[aco]=bb[t];//ad[t]=0;aeon[t]=1;
+            ab[aco] = xb;
             ac[aco] = xc;
             ad[aco] = xd;
             if (xxtype > 100)
                 ac[aco] = xxtype;
-            // ae[aco]=0;af[aco]=0;
             atype[aco] = xtype;
             if (xxtype >= 0 && xxtype <= 99100)
-                axtype[aco] = xxtype; // ahp[aco]=iz[bxtype[t]];aytm[aco]=0;
-            // if (xxtype==1)end();
+                axtype[aco] = xxtype;
             anotm[aco] = xnotm;
             if (aa[aco] - fx <= ma + mnobia / 2)
                 amuki[aco] = 1;
@@ -7428,62 +6943,24 @@ void ayobi(int xa, int xb, int xc, int xd, int xnotm, int xtype, int xxtype) {
             anobib[aco] = any[atype[aco]];
 
             //大砲音
-            if (xtype == 7 && !oto[10] == 0) {
-                ot(oto[10]);
+            if (xtype == 7 && gameState->sounds[10]) {
+                makeSound(gameState->sounds[10]);
             }
             //ファイア音
-            if (xtype == 10 && !oto[18] == 0) {
-                ot(oto[18]);
+            if (xtype == 10 && gameState->sounds[18]) {
+                makeSound(gameState->sounds[18]);
             }
 
             azimentype[aco] = 1;
 
-            // if (atype[aco]<=30 && atype[aco]!=4)atm[aco]=20;
-
-            // azimentype[aco]=1;
-
-            switch (atype[aco]) {
-                /*
-                case 0:case 1:case 2:case 5:case 6:case 7:case 8:
-                azimentype[aco]=2;
-                break;
-
-                case 3:case 4:
-                azimentype[aco]=0;
-                break;
-
-                case 49:case 50://case 2:case 5:case 6:
-                azimentype[aco]=4;
-                break;
-
-                case 80:case 81:case 82:case 83:case 84:case 85:
-                azimentype[aco]=1;
-                break;
-
-                case 100:case 101:case 102:case 103:case 104:case 105:case
-                106:case 107:case 108: azimentype[aco]=1; break;
-
-                case 120:case 121:case 122:
-                azimentype[aco]=1;
-                break;
-
-                case 130:case 131:case 132:case 133:case 134:
-                azimentype[aco]=1;
-                break;
-                */
-            }
-
             if (xtype == 87) {
-                atm[aco] = rand(179) + (-90);
+                atm[aco] = rand(179) - 90;
             }
 
             aco += 1;
             if (aco >= amax - 1) {
                 aco = 0;
             }
-        } // t1
-
-        // if (bz[t]==1){bz[t]=0;}
-    } // rz
-
-} // ayobi
+        }
+    }
+}

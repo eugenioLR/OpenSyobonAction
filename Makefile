@@ -1,8 +1,8 @@
-lib-flags = `sdl-config --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lSDL_ttf
+lib-flags = `sdl-config --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lSDL_ttf -lm
 flags = -g -Wall -Wno-narrowing
 
 SyobonAction:main.o loadg.o DxLib.o
-	g++ $(flags) main.o loadg.o DxLib.o -o SyobonAction $(lib-flags)
+	g++ $(flags) DxLib.o loadg.o main.o -o SyobonAction $(lib-flags)
 main.o: main.cpp
 	g++ $(flags) -c main.cpp
 loadg.o: loadg.cpp

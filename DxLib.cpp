@@ -35,7 +35,6 @@ int DxLib_Init() {
     }
 
     // Audio Rate, Audio Format, Audio Channels, Audio Buffers
-#define AUDIO_CHANNELS 2
     if (sound && Mix_OpenAudio(22050, AUDIO_S16SYS, AUDIO_CHANNELS, 1024)) {
         fprintf(stderr, "Unable to init SDL_mixer: %s\n", Mix_GetError());
         sound = false;
@@ -171,11 +170,6 @@ byte WaitKey() {
                 return event.key.keysym.sym;
     }
 }
-
-/*Uint32 GetColor(byte r, byte g, byte b)
-{
-    return r << 8 * 3 | g << 8 * 2 | b << 8 | 0xFF;
-}*/
 
 void DrawGraph(int a, int b, SDL_Surface *mx) {
     if (mx) {
