@@ -72,7 +72,9 @@ void SetFontSize(byte size) {
 }
 
 byte fontType = DX_FONTTYPE_NORMAL;
-void ChangeFontType(byte type) { fontType = type; }
+void ChangeFontType(byte type) {
+    fontType = type;
+}
 
 void DrawString(int a, int b, const char *x, Uint32 c) {
     SDL_Color color = {c >> 16, c >> 8, c};
@@ -151,7 +153,9 @@ void UpdateKeys() {
     }
 }
 
-byte ProcessMessage() { return ex; }
+byte ProcessMessage() {
+    return ex;
+}
 
 byte CheckHitKey(int key) {
     if (key == SDLK_z && keysHeld[SDLK_SEMICOLON])
@@ -189,8 +193,7 @@ void DrawTurnGraph(int a, int b, SDL_Surface *mx) {
         offset.y = b;
 
         SDL_Surface *flipped = zoomSurface(mx, -1, 1, 0);
-        SDL_SetColorKey(flipped, SDL_SRCCOLORKEY,
-                        SDL_MapRGB(flipped->format, 9 * 16 + 9, 255, 255));
+        SDL_SetColorKey(flipped, SDL_SRCCOLORKEY, SDL_MapRGB(flipped->format, 9 * 16 + 9, 255, 255));
         SDL_BlitSurface(flipped, NULL, screen, &offset);
         SDL_FreeSurface(flipped);
     }
@@ -203,19 +206,14 @@ void DrawVertTurnGraph(int a, int b, SDL_Surface *mx) {
         offset.y = b - mx->h / 2;
 
         SDL_Surface *flipped = rotozoomSurface(mx, 180, 1, 0);
-        SDL_SetColorKey(flipped, SDL_SRCCOLORKEY,
-                        SDL_MapRGB(flipped->format, 9 * 16 + 9, 255, 255));
+        SDL_SetColorKey(flipped, SDL_SRCCOLORKEY, SDL_MapRGB(flipped->format, 9 * 16 + 9, 255, 255));
         SDL_BlitSurface(flipped, NULL, screen, &offset);
         SDL_FreeSurface(flipped);
     }
 }
 
-SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height,
-                             SDL_Surface *src) {
-    SDL_Surface *img = SDL_CreateRGBSurface(
-        SDL_SWSURFACE, width, height, screen->format->BitsPerPixel,
-        src->format->Rmask, src->format->Bmask, src->format->Gmask,
-        src->format->Amask);
+SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height, SDL_Surface *src) {
+    SDL_Surface *img = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, screen->format->BitsPerPixel, src->format->Rmask, src->format->Bmask, src->format->Gmask, src->format->Amask);
 
     SDL_Rect offset;
     offset.x = srcx;
@@ -224,8 +222,7 @@ SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height,
     offset.h = height;
 
     SDL_BlitSurface(src, &offset, img, NULL);
-    SDL_SetColorKey(img, SDL_SRCCOLORKEY,
-                    SDL_MapRGB(img->format, 9 * 16 + 9, 255, 255));
+    SDL_SetColorKey(img, SDL_SRCCOLORKEY, SDL_MapRGB(img->format, 9 * 16 + 9, 255, 255));
     return img;
 }
 

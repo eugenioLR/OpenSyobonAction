@@ -56,8 +56,6 @@ Uint32 color;
 Uint32 gfxcolor;
 void setfont(int a);
 void setcolor(int red, int green, int blue);
-void setc0();
-void setc1();
 void drawpixel(int a, int b);
 void drawline(int a, int b, int c, int d);
 void drawrect(int a, int b, int c, int d);
@@ -117,7 +115,7 @@ int ma, mb, mnobia, mnobib, mhp;
 int mc, md, macttype, atkon, atktm, mactsok, msstar, nokori = 3, mactp, mact;
 
 int mtype, mxtype, mtm, mzz;
-int mzimen, mrzimen, mkasok, mmuki, mmukitm, mjumptm, mkeytm, mcleartm;
+int mzimen, sliperyFloor, mkasok, facingRight, mmukitm, mjumptm, mkeytm, mcleartm;
 int mmutekitm, mmutekion;
 int mztm, mztype;
 int actaon[7];
@@ -141,8 +139,7 @@ void txmsg(string x, int a);
 void setfont(int x, int y);
 
 //効果を持たないグラ
-void eyobi(int xa, int xb, int xc, int xd, int xe, int xf, int xnobia,
-           int xnobib, int xgtype, int xtm);
+void eyobi(int xa, int xb, int xc, int xd, int xe, int xf, int xnobia, int xnobib, int xgtype, int xtm);
 #define emax 201
 int eco;
 int ea[emax], eb[emax], enobia[emax], enobib[emax], ec[emax], ed[emax];
