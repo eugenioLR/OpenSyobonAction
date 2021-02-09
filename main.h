@@ -21,9 +21,6 @@ int maintm = 0;
 int stagecolor = 1;
 int sta = 1, stb = 4, stc = 0;
 
-//クイック
-int fast = 1;
-
 //トラップ表示
 int trap = 1;
 
@@ -42,7 +39,7 @@ int over = 0;
 int stageonoff = 0;
 
 //メインプログラム
-void Mainprogram(int *);
+void gameLogic(int *);
 void rpaint(int *);
 int maint;
 
@@ -115,7 +112,7 @@ int ma, mb, mnobia, mnobib, mhp;
 int mc, md, macttype, atkon, atktm, mactsok, msstar, nokori = 3, mactp, mact;
 
 int mtype, mxtype, mtm, mzz;
-int mzimen, sliperyFloor, mkasok, facingRight, mmukitm, mjumptm, mkeytm, mcleartm;
+int isOnFloor, sliperyFloor, mkasok, facingRight, mmukitm, mjumptm, mkeytm, mcleartm;
 int mmutekitm, mmutekion;
 int mztm, mztype;
 int actaon[7];
