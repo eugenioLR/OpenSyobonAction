@@ -4004,12 +4004,12 @@ void fillarc(int a, int b, int c, int d) { filledEllipseColor(screen, a, b, c, d
 void FillScreen() { SDL_FillRect(screen, 0, color); }
 
 //画像の読み込み
-SDL_Surface *loadimage(string x) {
+/*SDL_Surface *loadimage(string x) {
     // mgrap[a]=LoadGraph(b);
     return LoadGraph(x.c_str());
-}
+}*/
 
-SDL_Surface *loadimage(SDL_Surface *a, int x, int y, int r, int z) { return DerivationGraph(x, y, r, z, a); }
+/*SDL_Surface *loadimage(SDL_Surface *a, int x, int y, int r, int z) { return DerivationGraph(x, y, r, z, a); }*/
 
 //画像表示
 void drawimage(SDL_Surface *mx, int a, int b) {
@@ -4021,7 +4021,7 @@ void drawimage(SDL_Surface *mx, int a, int b) {
 
 void drawimage(SDL_Surface *mx, int a, int b, int c, int d, int e, int f) {
     SDL_Surface *m;
-    m = DerivationGraph(c, d, e, f, mx);
+    m = loadimageCut(c, d, e, f, mx);
     if (mirror == 0)
         DrawGraph(a, b, m);
     if (mirror == 1)
@@ -4044,44 +4044,6 @@ void str(string x, int a, int b) {
     // DrawString(10,10,xs[3].c_str(),color);
 
     xx[2] = 4;
-}
-
-/*
-//数値を文字に変換
-void strchange(string x,int a){
-}
-*/
-
-/*
-//中央にあわせる//(font)
-void str1(String c,int r,int b){
-int a=0,x=0;
-int d=6;
-
-//x=c.length()*d;//tiny.6
-x=r*d;
-a=120-x/2;
-
-g.drawString(c,a,b);
-}
-*/
-
-// string→int
-/*
-char str[] = "12345";
-int num;
-
-num = atoi(str);
-*/
-
-//文字ラベル変更
-void setfont(int a) {
-    /*
-    if (a==0)g.setFont(Font.getFont(Font.SIZE_TINY));
-    if (a==1)g.setFont(Font.getFont(Font.SIZE_SMALL));
-    if (a==2)g.setFont(Font.getFont(Font.SIZE_MEDIUM));
-    if (a==3)g.setFont(Font.getFont(Font.SIZE_LARGE));
-    */
 }
 
 //音楽再生
@@ -7420,92 +7382,82 @@ void ttmsg() {
         fillrect(xx[1], xx[2], 360, tmsgy / 100);
         setcolor(0xFF, 0xFF, 0xFF); // setc1();
         drawrect(xx[1], xx[2], 360, tmsgy / 100);
-    }
-    if (tmsgtype == 2) {
-        //フォント
-        setfont(20, 5);
-
-        if (tmsg == 0) {
-            setcolor(0xFF, 0xFF, 0xFF); // setc1();
+        if (tmsgtype == 2) {
             //フォント
             setfont(20, 5);
-            txmsg("テスト　hoge", 0);
-        }
+            switch(tmsg){
+                case 0:
+                    setcolor(0xFF, 0xFF, 0xFF); // setc1();
+                    //フォント
+                    setfont(20, 5);
+                    txmsg("テスト　hoge", 0);
+                    break;
+                case 1:
+                    setcolor(0xFF, 0xFF, 0xFF); // setc1();
+                    txmsg("", 0);
+                    txmsg("ステージ 1 より", 0);
+                    txmsg("特殊的なものが増えたので", 1);
+                    txmsg("気をつけてくれよ〜", 2);
+                    txmsg("後、アイテムの一部を利用するかも…", 4);
+                    txmsg("                       ちく より", 6);
+                    break;
+                case 2:
+                    txmsg("            ？が必要です ", 3);
+                    txmsg("                         m9(^Д^)", 6);
+                    break;
+                case 3:
+                    txmsg("   別にコインに意味ないけどね ", 3);
+                    txmsg("                      (・ω・ )ﾉｼ", 6);
+                    break;
+                case 4:
+                    txmsg("この先に隠しブロックがあります ", 2);
+                    txmsg("注意してください !!", 4);
+                    break;
+                case 5:
+                    txmsg("", 0);
+                    txmsg(" 前回よりも難易度を下げましたので", 1);
+                    txmsg(" 気楽にプレイしてください    ", 3);
+                    txmsg("                       ちく より", 6);
+                    break;
+                case 6:
+                    txmsg("", 0);
+                    txmsg(" そこにいる敵のそばによると、      ", 1);
+                    txmsg(" 自分と一緒にジャンプしてくれます。", 2);
+                    txmsg("   可愛いですね。                  ", 3);
+                    break;
+                case 7:
+                    txmsg("", 0);
+                    txmsg(" あの敵は連れて来れましたか?、     ", 1);
+                    txmsg(" 連れて来れなかった貴方は、        ", 2);
+                    txmsg(" そこの落とし穴から Let's dive!    ", 3);
+                    break;
+                case 8:
+                    txmsg("そんな容易に", 1);
+                    txmsg("ヒントに頼るもんじゃないぜ", 2);
+                    txmsg("ほら、さっさと次行きな!!", 3);
+                    break;
+                case 9:
+                    txmsg(" 正真正銘のファイナルステージ。    ", 1);
+                    txmsg(" クリアすれば遂にエンディング!!    ", 2);
+                    txmsg(" その土管から戻ってもいいんだぜ?   ", 3);
+                    break;
+                case 10:
+                    txmsg(" 床が凍ってるから、すっごい滑るよ。", 1);
+                    txmsg(" ", 2);
+                    txmsg(" 　                      ", 3);
+                    break;
+                case 100:
+                    txmsg("え？私ですか？ ", 0);
+                    txmsg("いやぁ、ただの通りすがりの", 2);
+                    txmsg("ヒントブロックですよ〜", 3);
+                    txmsg("決して怪しいブロックじゃないですよ", 5);
+                    txmsg("                          (…チッ)", 6);
+                    break;
 
-        if (tmsg == 1) {
-            setcolor(0xFF, 0xFF, 0xFF); // setc1();
-            txmsg("", 0);
-            txmsg("ステージ 1 より", 0);
-            txmsg("特殊的なものが増えたので", 1);
-            txmsg("気をつけてくれよ〜", 2);
-            txmsg("後、アイテムの一部を利用するかも…", 4);
-            txmsg("                       ちく より", 6);
+            }
+            setfont(16, 4);
         }
-
-        if (tmsg == 2) {
-            txmsg("            ？が必要です ", 3);
-            txmsg("                         m9(^Д^)", 6);
-        }
-
-        if (tmsg == 3) {
-            txmsg("   別にコインに意味ないけどね ", 3);
-            txmsg("                      (・ω・ )ﾉｼ", 6);
-        }
-
-        if (tmsg == 4) {
-            txmsg("この先に隠しブロックがあります ", 2);
-            txmsg("注意してください !!", 4);
-        }
-
-        if (tmsg == 5) {
-            txmsg("", 0);
-            txmsg(" 前回よりも難易度を下げましたので", 1);
-            txmsg(" 気楽にプレイしてください    ", 3);
-            txmsg("                       ちく より", 6);
-        }
-
-        if (tmsg == 6) {
-            txmsg("", 0);
-            txmsg(" そこにいる敵のそばによると、      ", 1);
-            txmsg(" 自分と一緒にジャンプしてくれます。", 2);
-            txmsg("   可愛いですね。                  ", 3);
-        }
-
-        if (tmsg == 7) {
-            txmsg("", 0);
-            txmsg(" あの敵は連れて来れましたか?、     ", 1);
-            txmsg(" 連れて来れなかった貴方は、        ", 2);
-            txmsg(" そこの落とし穴から Let's dive!    ", 3);
-        }
-
-        if (tmsg == 8) {
-            txmsg("そんな容易に", 1);
-            txmsg("ヒントに頼るもんじゃないぜ", 2);
-            txmsg("ほら、さっさと次行きな!!", 3);
-        }
-
-        if (tmsg == 9) {
-            txmsg(" 正真正銘のファイナルステージ。    ", 1);
-            txmsg(" クリアすれば遂にエンディング!!    ", 2);
-            txmsg(" その土管から戻ってもいいんだぜ?   ", 3);
-        }
-
-        if (tmsg == 10) {
-            txmsg(" 床が凍ってるから、すっごい滑るよ。", 1);
-            txmsg(" ", 2);
-            txmsg(" 　                      ", 3);
-        }
-
-        if (tmsg == 100) {
-            txmsg("え？私ですか？ ", 0);
-            txmsg("いやぁ、ただの通りすがりの", 2);
-            txmsg("ヒントブロックですよ〜", 3);
-            txmsg("決して怪しいブロックじゃないですよ", 5);
-            txmsg("                          (…チッ)", 6);
-        }
-
-        setfont(16, 4);
-    } // 2
+    }// 2
 
     if (tmsgtype == 3) {
         xx[5] = (((15 - 1) * 1200 + 1500) / 100 - tmsgy / 100);

@@ -87,7 +87,9 @@ void DrawTurnGraph(int a, int b, SDL_Surface *mx);
 
 void DrawVertTurnGraph(int a, int b, SDL_Surface *mx);
 
-SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height, SDL_Surface *src);
+SDL_Surface *loadimageCut(SDL_Surface *a, int x, int y, int r, int z);
+SDL_Surface *loadimageCut(int srcx, int srcy, int width, int height, SDL_Surface *src);
 
 // Noticably different than the original
-SDL_Surface *LoadGraph(const char *filename);
+SDL_Surface *loadimage(const char *filename);
+SDL_Surface *loadimage(std::string filename);

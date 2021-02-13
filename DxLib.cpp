@@ -208,7 +208,10 @@ void DrawVertTurnGraph(int a, int b, SDL_Surface *mx) {
     }
 }
 
-SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height, SDL_Surface *src) {
+
+SDL_Surface *loadimageCut(SDL_Surface *a, int x, int y, int r, int z) { return loadimageCut(x, y, r, z, a); }
+
+SDL_Surface *loadimageCut(int srcx, int srcy, int width, int height, SDL_Surface *src) {
     SDL_Surface *img =
         SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, screen->format->BitsPerPixel, src->format->Rmask, src->format->Bmask, src->format->Gmask, src->format->Amask);
 
@@ -223,8 +226,11 @@ SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height, SDL_Surf
     return img;
 }
 
+
 // Noticably different than the original
-SDL_Surface *LoadGraph(const char *filename) {
+SDL_Surface *loadimage(std::string filename) { return loadimage(filename.c_str()); }
+
+SDL_Surface *loadimage(const char *filename) {
     SDL_Surface *image = IMG_Load(filename);
 
     if (image)

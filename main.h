@@ -62,8 +62,6 @@ void fillarc(int a, int b, int c, int d);
 void FillScreen();
 SDL_Surface *grap[161][8];
 SDL_Surface *mgrap[51];
-SDL_Surface *loadimage(string b);
-SDL_Surface *loadimage(int a, int x, int y, int r, int z);
 int mirror;
 void drawimage(SDL_Surface *mx, int a, int b);
 void drawimage(SDL_Surface *mx, int a, int b, int c, int d, int e, int f);
