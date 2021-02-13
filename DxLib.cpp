@@ -72,9 +72,7 @@ void SetFontSize(byte size) {
 }
 
 byte fontType = DX_FONTTYPE_NORMAL;
-void ChangeFontType(byte type) {
-    fontType = type;
-}
+void ChangeFontType(byte type) { fontType = type; }
 
 void DrawString(int a, int b, const char *x, Uint32 c) {
     SDL_Color color = {c >> 16, c >> 8, c};
@@ -153,9 +151,7 @@ void UpdateKeys() {
     }
 }
 
-byte ProcessMessage() {
-    return ex;
-}
+byte ProcessMessage() { return ex; }
 
 byte CheckHitKey(int key) {
     if (key == SDLK_z && keysHeld[SDLK_SEMICOLON])
@@ -213,7 +209,8 @@ void DrawVertTurnGraph(int a, int b, SDL_Surface *mx) {
 }
 
 SDL_Surface *DerivationGraph(int srcx, int srcy, int width, int height, SDL_Surface *src) {
-    SDL_Surface *img = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, screen->format->BitsPerPixel, src->format->Rmask, src->format->Bmask, src->format->Gmask, src->format->Amask);
+    SDL_Surface *img =
+        SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, screen->format->BitsPerPixel, src->format->Rmask, src->format->Bmask, src->format->Gmask, src->format->Amask);
 
     SDL_Rect offset;
     offset.x = srcx;

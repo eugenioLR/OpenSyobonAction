@@ -120,7 +120,7 @@ void loadg(void) {
     grap[83][ENEMIES] = DerivationGraph(0, 0, 49, 48, mgrap[BONUS]);
     grap[84][ENEMIES] = DerivationGraph(33 * 5 + 1, 0, 30, 30, mgrap[ENEMIES]);
     grap[86][ENEMIES] = DerivationGraph(102, 66, 49, 59, mgrap[BONUS]);
-    grap[87][ENEMIES] = DerivationGraph(33 * 8 - 5, 0, 16, 16, mgrap[ENEMIES]);//fireball segment
+    grap[87][ENEMIES] = DerivationGraph(33 * 8 - 5, 0, 16, 16, mgrap[ENEMIES]); // fireball segment
     grap[152][ENEMIES] = DerivationGraph(152, 66, 49, 59, mgrap[BONUS]);
 
     grap[90][ENEMIES] = DerivationGraph(102, 0, 64, 63, mgrap[BONUS]);
@@ -141,11 +141,10 @@ void loadg(void) {
     grap[4][BACKGD] = DerivationGraph(151, 113, 51, 29, mgrap[BACKGD]);
     grap[5][BACKGD] = DerivationGraph(222, 0, 28, 60, mgrap[BACKGD]);
     grap[6][BACKGD] = DerivationGraph(151, 143, 90, 40, mgrap[BACKGD]);
-    grap[7][BACKGD] = DerivationGraph(151, 184, 60, 30, mgrap[BACKGD]);//pipe top
-    grap[8][BACKGD] = DerivationGraph(151, 217, 50, 29, mgrap[BACKGD]);//pipe bottom
+    grap[7][BACKGD] = DerivationGraph(151, 184, 60, 30, mgrap[BACKGD]); // pipe top
+    grap[8][BACKGD] = DerivationGraph(151, 217, 50, 29, mgrap[BACKGD]); // pipe bottom
     grap[30][BACKGD] = DerivationGraph(293, 0, 149, 90, mgrap[BACKGD]);
     grap[31][BACKGD] = DerivationGraph(293, 92, 64, 29, mgrap[BACKGD]);
-
 
     //中間フラグ
     grap[20][BACKGD] = DerivationGraph(40, 182, 40, 60, mgrap[BACKGD]);

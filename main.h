@@ -88,9 +88,6 @@ void stagep();
 // 10-ステージ前
 //
 
-//ループ
-int t, tt, t1, t2, t3, t4;
-
 //初期化
 int zxon, zzxon;
 
@@ -145,7 +142,7 @@ int egtype[emax];
 
 //敵キャラ
 void ayobi(int xa, int xb, int xc, int xd, int xnotm, int xtype, int xxtype);
-void tekizimen();
+void tekizimen(int);
 #define amax 24
 int aco;
 int aa[amax], ab[amax], anobia[amax], anobib[amax], ac[amax], ad[amax];
