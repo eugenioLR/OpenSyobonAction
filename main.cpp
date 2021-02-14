@@ -1166,33 +1166,12 @@ void gameLogic(int *screenType) {
                     md = -1200;
                     mjumptm = 10;
 
-                    // PlaySound( "jump.mp3" , DX_PLAYTYPE_NORMAL ) ;
-
-                    // PlayMusic( "SE/jump.mp3" , DX_PLAYTYPE_NORMAL ) ;
-
-                    // PlaySoundMem( oto[1], DX_PLAYTYPE_NORMAL ) ;
-
-                    // PlaySoundMem( oto[1], DX_PLAYTYPE_BACK) ;
                     ot(oto[1]);
-
-                    /*
-                    md=-1040;
-                    xx[1]=600;if (mc>xx[1] || mc<=-xx[1]){md=-1400;}
-                    xx[1]=7;xx[2]=400;
-                    if (mkasok>xx[1] && (mc>xx[2] || mc<=-xx[2])){
-                    md=-1600;
-                    if (mc>=800 || mc<=-800){md=-1800;}
-                    }
-                    */
-
                     isOnFloor = 0;
                 }
+
                 if (actaon[1] <= 9)
                     actaon[1] = 0;
-
-                // if (actaon[1]==1){my+=xx[1];actaon[1]=0;}
-
-                //}//陸地
 
                 if (mmutekitm >= -1)
                     mmutekitm--;
@@ -2130,8 +2109,7 @@ void gameLogic(int *screenType) {
                                         mtm = 0;
                                         ot(oto[7]);
                                         mxtype = 2;
-                                    }
-                                    else if (sxtype[t] == 5) {
+                                    } else if (sxtype[t] == 5) {
                                         mtype = 100;
                                         mtm = 0;
                                         ot(oto[7]);
@@ -3107,133 +3085,6 @@ void gameLogic(int *screenType) {
                                 azimentype[t] = 1;
                                 xx[10] = 100;
                                 break;
-
-                                /*
-                                case 1:
-                                xx[10]=180;
-                                if (axtype[t]==2)xx[10]=0;
-                                if (axzimen[t]==1){
-                                ab[t]-=1000;ad[t]=-1200;
-                                if (axtype[t]==1)ad[t]=-1600;
-                                if (axtype[t]==2){
-                                atm[t]+=1;
-                                if
-                                (atm[t]>=2){atm[t]=0;ad[t]=-1600;}else{ad[t]=-1000;}
-                                }
-                                }
-
-                                break;
-
-                                case 2:
-                                xx[10]=160;
-                                if (axtype[t]==1)azimentype[t]=2;xx[10]=100;
-                                if (axtype[t]==2)xx[10]=0;
-                                break;
-
-                                case 3:
-                                xx[10]=180;
-                                if (ae[t]==0)ad[t]+=10;
-                                if (ae[t]==1)ad[t]-=10;
-                                if (ad[t]>=100)ae[t]=1;
-                                if (ad[t]<=-100)ae[t]=0;
-                                ab[t]+=ad[t];//ad[t]+=
-
-                                if (axtype[t]==1){
-                                if (ab[t]<mb){ab[t]+=100;}
-                                }
-                                if (axtype[t]==2)xx[10]=0;
-                                break;
-
-                                case 4:
-                                if (ae[t]==0)ad[t]+=8;
-                                if (ae[t]==1)ad[t]-=8;
-                                if (ad[t]>=80)ae[t]=1;
-                                if (ad[t]<=-80)ae[t]=0;
-                                ab[t]+=ad[t];
-
-                                //sstr=""+atm[t];
-                                if (axtype[t]>=1){
-                                xx[22]=200;xx[21]=3600;
-
-                                if (atm[t]==0){atm[t]=ab[t]%2+1;a2tm[t]=aa[t];if
-                                (axtype[t]%2==0)a2tm[t]=ab[t];}
-
-                                if (axtype[t]%2==1){
-                                if (aa[t]<a2tm[t]-xx[21]){atm[t]=2;}
-                                if (aa[t]>a2tm[t]+xx[21]){atm[t]=1;}
-                                if (atm[t]==1){aa[t]-=xx[22];amuki[t]=0;}
-                                if (atm[t]==2){aa[t]+=xx[22];amuki[t]=1;}
-                                }
-                                if (axtype[t]%2==0){
-                                if (ab[t]<a2tm[t]-xx[21]){atm[t]=2;}
-                                if (ab[t]>a2tm[t]+xx[21]){atm[t]=1;}
-                                if (atm[t]==1){ab[t]-=xx[22];}
-                                if (atm[t]==2){ab[t]+=xx[22];}
-                                }
-
-                                }//axtype1
-
-                                break;
-
-                                case 5:
-                                xx[10]=120;atm[t]++;
-                                if (axtype[t]==2){xx[10]=200;azimentype[t]=2;}
-                                if (ma+mnobia>=aa[t]-fx &&
-                                ma<=aa[t]+anobia[t]-fx &&
-                                mb+mnobib+1000<ab[t]-fy){ xx[10]=300; if
-                                (axtype[t]>=1){
-                                //xx[10]=240;
-                                if (atm[t]>=16){amuki[t]+=1;if
-                                (amuki[t]>=2)amuki[t]=0;atm[t]=0;
-                                //if (axtype[t]==2){ab[t]-=600;ad[t]=-900;}
-                                }}
-                                }
-                                break;
-
-                                case 6:
-                                atm[t]+=1;xx[10]=0;
-                                if (axtype[t]==1)atm[t]+=(rand(9)-4);
-                                if (axtype[t]==2)xx[10]=100;
-                                if (atm[t]>=40){
-                                xx[22]=360;if (amuki[t]==0)xx[22]=-xx[22];
-                                cyobi(aa[t]+amuki[t]*anobia[t],ab[t]+1600,xx[22],0,0,0,0,60);
-                                atm[t]=0;
-                                }
-
-                                if (axtype[t]!=2){
-                                if
-                                (ma+mnobia/2<=aa[t]+anobia[t]/2-fx){amuki[t]=0;}else{amuki[t]=1;}
-                                }
-                                break;
-
-                                case 7:
-                                xx[10]=160;
-                                if (axtype[t]==1)xx[10]=240;
-                                if (axtype[t]==2)xx[10]=60;
-                                break;
-
-                                case 8:
-                                atm[t]+=1;xx[10]=0;
-                                xx[15]=12;xx[17]=0;
-                                if (axtype[t]==1)xx[15]=8;
-                                if (axtype[t]==2){xx[15]=40;xx[17]=3;}
-
-                                if (atm[t]>=xx[15]){
-                                for (t3=0;t3<=xx[17];t3++){
-                                xx[16]=300;xx[22]=rand(xx[16])*5/4-xx[16]/4;
-                                a2tm[t]+=1;if
-                                (a2tm[t]>=1){xx[22]=-xx[22];a2tm[t]=-1;}
-                                cyobi(aa[t]+amuki[t]*anobia[t]/2,ab[t]+600,xx[22],-400-rand(600),0,80,1,60);
-                                //if ((xx[16]==0) || t3==xx[16])atm[t]=0;
-                                }//t
-                                atm[t]=0;
-                                }
-
-                                break;
-
-
-                                */
-
                         } // sw
 
                         if (abrocktm[t] >= 1)
@@ -3588,26 +3439,6 @@ void gameLogic(int *screenType) {
                                     mmsgtm = 30;
                                     mmsgtype = 3;
                                 }
-
-                                /*
-                                if (atype[t]==101){mmutekitm=120;mmutekion=1;}
-                                if (atype[t]==102){mhp-=1;mmutekitm=20;}
-                                if (atype[t]==103){
-                                //xx[24]=2400;
-                                eyobi(aa[t]-500,ab[t],0,-600,0,80,2500,1600,2,32);
-                                }
-                                if (atype[t]==104){mztm=120;mztype=1;}
-                                if (atype[t]==105){mztm=160;mztype=2;}
-
-                                if
-                                (atype[t]==120){mtype=3;mnobia=3800;mnobib=2300;}
-
-                                if (atype[t]==130){msoubi=1;}
-                                if (atype[t]==131){msoubi=2;}
-                                if (atype[t]==132){msoubi=3;}
-                                if (atype[t]==133){msoubi=4;}
-
-                                */
                                 aa[t] = -90000000;
                             }
 
@@ -3634,11 +3465,6 @@ void gameLogic(int *screenType) {
                         if (xx[1] <= 5000)
                             xx[3] = 1;
                     }
-                    // if (kscroll!=5){//戻りなし
-                    // xx[1]=xx[2]-500;if (ma<xx[1] &&
-                    // fzx>700){xx[5]=xx[1]-ma;ma=xx[1];fx-=xx[5];fzx-=xx[5];}
-                    //}
-                    // if (xx[3]==1){if (tyuukan==1)tyuukan=1;}
                 } // kscroll
 
             } // if (screenType==1){
@@ -3715,7 +3541,7 @@ void gameLogic(int *screenType) {
                 maintm = 0;
                 *screenType = GAME_SCREEN;
                 reload = 0;
-                if((world == 1 && level == 3 && section == 6) || (world == 2 && level == 4 && (section == 10 || section == 12))){
+                if ((world == 1 && level == 3 && section == 6) || (world == 2 && level == 4 && (section == 10 || section == 12))) {
                     section = 0;
                 }
             }
@@ -4665,7 +4491,7 @@ void stagep(int world, int level, int section) {
 
                 for (tt = 0; tt <= 1000; tt++) {
                     for (t = 0; t <= 16; t++) {
-                        //stagedate[t][tt] = 0;
+                        // stagedate[t][tt] = 0;
                         stagedate[t][tt] = stagedatex[t][tt];
                     }
                 }
@@ -4724,7 +4550,7 @@ void stagep(int world, int level, int section) {
 
                 for (tt = 0; tt <= 1000; tt++) {
                     for (t = 0; t <= 16; t++) {
-                        //stagedate[t][tt] = 0;
+                        // stagedate[t][tt] = 0;
                         stagedate[t][tt] = stagedatex[t][tt];
                     }
                 }
@@ -5863,9 +5689,7 @@ void stagep(int world, int level, int section) {
                 stype[sco] = 50;
                 sxtype[sco] = 1;
                 sco += 1;
-            }
-
-            else if (section == 1) { // 2-4(2番)
+            } else if (section == 1) { // 2-4(2番)
                 ma = 4500;
                 mb = 3000 * 11;
                 bgmchange(otom[4]);
@@ -5917,9 +5741,7 @@ void stagep(int world, int level, int section) {
                 stype[sco] = 0;
                 sxtype[sco] = 0;
                 sco += 1;
-            }
-
-            else if (section == 2) { // 2-4(3番)
+            } else if (section == 2) { // 2-4(3番)
                 ma = 4500;
                 mb = 3000 * 11;
                 bgmchange(otom[5]); // 6
