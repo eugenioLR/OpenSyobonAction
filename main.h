@@ -1,4 +1,5 @@
 #include "DxLib.h"
+#include "stageReader.h"
 using namespace std;
 
 #define SHORT
@@ -79,15 +80,15 @@ void str(string c, int a, int b);
 //)
 
 void stagecls();
-void stage();
-void stagep();
+void stage(int, int, int);
+void stagep(int, int, int);
 
 // 1-ステージ
 // 10-ステージ前
 //
 
 //初期化
-int zxon, zzxon;
+int reload, zzxon;
 
 //キーコンフィグ
 int key, keytm;

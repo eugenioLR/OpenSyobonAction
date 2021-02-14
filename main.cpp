@@ -68,7 +68,7 @@ void rpaint(int *screenType) {
     FillScreen();
     switch (*screenType) {
         case GAME_SCREEN:
-            if (zxon) {
+            if (reload) {
                 //背景
                 for (t = 0; t < nmax; t++) {
                     xx[0] = na[t] - fx;
@@ -417,8 +417,7 @@ void rpaint(int *screenType) {
 
                         if (txtype[t] != 10) {
 
-                            if (ttype[t] == 100 || ttype[t] == 101 || ttype[t] == 102 || ttype[t] == 103 || (ttype[t] == 104 && txtype[t] == 1) ||
-                                (ttype[t] == 114 && txtype[t] == 1) || ttype[t] == 116) {
+                            if (ttype[t] == 100 || ttype[t] == 101 || ttype[t] == 102 || ttype[t] == 103 || (ttype[t] == 104 && txtype[t] == 1) || (ttype[t] == 114 && txtype[t] == 1) || ttype[t] == 116) {
                                 xx[6] = 2 + xx[9];
                                 drawimage(grap[xx[6]][1], xx[0] / 100, xx[1] / 100);
                             }
@@ -632,24 +631,26 @@ void rpaint(int *screenType) {
 
                             for (tt = 0; tt <= axtype[t] % 100; tt++) {
                                 xx[26] = 18;
-                                // xd[4] = tt * xx[26] * cos(atm[t] * pai / 180 / 2);
-                                // xd[5] = tt * xx[26] * sin(atm[t] * pai / 180 / 2);
-                                // xx[24] = (int)xd[4];
-                                // xx[25] = (int)xd[5];
+                                // xd[4] = tt * xx[26] * cos(atm[t] * pai / 180
+                                // / 2); xd[5] = tt * xx[26] * sin(atm[t] * pai
+                                // / 180 / 2); xx[24] = (int)xd[4]; xx[25] =
+                                // (int)xd[5];
                                 xx[24] = (int)(tt * xx[26] * cos(atm[t] * pai / 180 / 2));
                                 xx[25] = (int)(tt * xx[26] * sin(atm[t] * pai / 180 / 2));
                                 // setcolor(230, 120, 0);
                                 xx[23] = 8;
                                 if (atype[t] == 87) {
-                                    // fillarc(xx[0] / 100 + xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
-                                    // setcolor(0, 0, 0);
-                                    // drawarc(xx[0] / 100 + xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
+                                    // fillarc(xx[0] / 100 + xx[24], xx[1] / 100
+                                    // + xx[25], xx[23], xx[23]); setcolor(0, 0,
+                                    // 0); drawarc(xx[0] / 100 + xx[24], xx[1] /
+                                    // 100 + xx[25], xx[23], xx[23]);
                                     drawimage(grap[87][3], xx[0] / 100 + xx[24] - 8, xx[1] / 100 + xx[25] - 8);
                                 } else {
                                     /*
-                                    fillarc(xx[0] / 100 - xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
-                                    setcolor(0, 0, 0);
-                                    drawarc(xx[0] / 100 - xx[24], xx[1] / 100 + xx[25], xx[23], xx[23]);
+                                    fillarc(xx[0] / 100 - xx[24], xx[1] / 100 +
+                                    xx[25], xx[23], xx[23]); setcolor(0, 0, 0);
+                                    drawarc(xx[0] / 100 - xx[24], xx[1] / 100 +
+                                    xx[25], xx[23], xx[23]);
                                     */
                                     drawimage(grap[87][3], xx[0] / 100 - xx[24] - 8, xx[1] / 100 - xx[25] - 8);
                                 }
@@ -869,7 +870,7 @@ void rpaint(int *screenType) {
                     fillrect(0, 0, fxmax, fymax);
                     if (blacktm == 0) {
                         if (blackx == 1) {
-                            zxon = 0;
+                            reload = 0;
                         }
                     }
 
@@ -938,6 +939,7 @@ void rpaint(int *screenType) {
 //メインプログラム
 void gameLogic(int *screenType) {
     int t, tt, t1, t3;
+    bool startgame = false;
 
     if (ending)
         *screenType = CREDITS_SCREEN;
@@ -947,8 +949,9 @@ void gameLogic(int *screenType) {
         case GAME_SCREEN:
             if (tmsgtype == 0) {
 
-                if (!zxon) {
-                    zxon = 1;
+                
+                if (!reload) {
+                    reload = 1;
                     mainmsgtype = 0;
 
                     stagecolor = 1;
@@ -973,7 +976,7 @@ void gameLogic(int *screenType) {
 
                     stagecls();
 
-                    stage();
+                    stage(sta, stb, stc);
 
                     //ランダムにさせる
                     if (over == 1) {
@@ -1013,7 +1016,7 @@ void gameLogic(int *screenType) {
                             stagecolor = rand(5);
                     }
 
-                } // zxon
+                } // reload
 
                 //プレイヤーの移動
                 xx[0] = 0;
@@ -1036,6 +1039,7 @@ void gameLogic(int *screenType) {
                 }
                 // if (CheckHitKey(KEY_INPUT_F1)==1){end();}
                 if (CheckHitKey(KEY_INPUT_F1) == 1) {
+                    Mix_HaltMusic();
                     *screenType = TITLE_SCREEN;
                 }
                 // if (CheckHitKey(KEY_INPUT_Q)==1){mkeytm=0;}
@@ -1075,7 +1079,8 @@ void gameLogic(int *screenType) {
                     if (xx[0] == 0)
                         actaon[1] = 10;
                 }
-                // if (( key & PAD_INPUT_UP) && keytm<=0){actaon[0]=-1;facingRight=0;}
+                // if (( key & PAD_INPUT_UP) &&
+                // keytm<=0){actaon[0]=-1;facingRight=0;}
 
                 // xx[0]=200;
                 // if (actaon[0]==-1){ma-=xx[0];}
@@ -1216,7 +1221,7 @@ void gameLogic(int *screenType) {
                         mc = 0;
                     }
                     if (mtm >= 100) {
-                        zxon = 0;
+                        reload = 0;
                         *screenType = LEVEL_TRANSITION;
                         mtm = 0;
                         mkeytm = 0;
@@ -1380,7 +1385,7 @@ void gameLogic(int *screenType) {
                         if (mtm == 250) {
                             stb++;
                             stc = 0;
-                            zxon = 0;
+                            reload = 0;
                             tyuukan = 0;
                             *screenType = LEVEL_TRANSITION;
                             maintm = 0;
@@ -1446,7 +1451,7 @@ void gameLogic(int *screenType) {
                                 sta++;
                                 stb = 1;
                                 stc = 0;
-                                zxon = 0;
+                                reload = 0;
                                 tyuukan = 0;
                                 *screenType = LEVEL_TRANSITION;
                                 maintm = 0;
@@ -1577,8 +1582,7 @@ void gameLogic(int *screenType) {
 
                                     //上
                                     if (ttype[t] != 7 && ttype[t] != 110 && !(ttype[t] == 114)) {
-                                        if (ma + mnobia > xx[8] + xx[0] * 2 + 100 && ma < xx[8] + xx[1] - xx[0] * 2 - 100 && mb + mnobib > xx[9] && mb + mnobib < xx[9] + xx[1] &&
-                                            md >= -100) {
+                                        if (ma + mnobia > xx[8] + xx[0] * 2 + 100 && ma < xx[8] + xx[1] - xx[0] * 2 - 100 && mb + mnobib > xx[9] && mb + mnobib < xx[9] + xx[1] && md >= -100) {
                                             if (ttype[t] != 115 && ttype[t] != 400 && ttype[t] != 117 && ttype[t] != 118 && ttype[t] != 120) {
                                                 mb = xx[9] - mnobib + 100;
                                                 md = 0;
@@ -1642,8 +1646,7 @@ void gameLogic(int *screenType) {
 
                                         //下
                                         if (t3 == xx[21] && mtype != 100 && ttype[t] != 117) { // && xx[12]==0){
-                                            if (ma + mnobia > xx[8] + xx[0] * 2 + 800 && ma < xx[8] + xx[1] - xx[0] * 2 - 800 && mb > xx[9] - xx[0] * 2 &&
-                                                mb < xx[9] + xx[1] - xx[0] * 2 && md <= 0) {
+                                            if (ma + mnobia > xx[8] + xx[0] * 2 + 800 && ma < xx[8] + xx[1] - xx[0] * 2 - 800 && mb > xx[9] - xx[0] * 2 && mb < xx[9] + xx[1] - xx[0] * 2 && md <= 0) {
                                                 xx[16] = 1;
                                                 xx[17] = 1;
                                                 mb = xx[9] + xx[1] + xx[0];
@@ -1686,10 +1689,11 @@ void gameLogic(int *screenType) {
                                         //左右
                                         if (t3 == xx[22] && xx[15] == 0) {
                                             if (ttype[t] != 7 && ttype[t] != 110 && ttype[t] != 117) {
-                                                if (!(ttype[t] == 114)) { // && txtype[t]==1)){
+                                                if (!(ttype[t] == 114)) { // &&
+                                                                          // txtype[t]==1)){
                                                     if (ta[t] >= -20000) {
-                                                        // if (ma+mnobia>xx[8] &&
-                                                        // ma<xx[8]+xx[2] &&
+                                                        // if (ma+mnobia>xx[8]
+                                                        // && ma<xx[8]+xx[2] &&
                                                         // mb+mnobib>xx[9]+xx[1]/2-xx[0]
                                                         // &&){
                                                         if (ma + mnobia > xx[8] && ma < xx[8] + xx[2] && mb + mnobib > xx[9] + xx[1] / 2 - xx[0] && mb < xx[9] + xx[2] && mc >= 0) {
@@ -1701,8 +1705,7 @@ void gameLogic(int *screenType) {
                                                             // if
                                                             // (ttype[t]==4){ma=xx[8]-mnobia;mc=-mc*4/4;}
                                                         }
-                                                        if (ma + mnobia > xx[8] + xx[2] && ma < xx[8] + xx[1] && mb + mnobib > xx[9] + xx[1] / 2 - xx[0] && mb < xx[9] + xx[2] &&
-                                                            mc <= 0) {
+                                                        if (ma + mnobia > xx[8] + xx[2] && ma < xx[8] + xx[1] && mb + mnobib > xx[9] + xx[1] / 2 - xx[0] && mb < xx[9] + xx[2] && mc <= 0) {
                                                             ma = xx[8] + xx[1];
                                                             mc = 0;
                                                             xx[16] = 1; // end();
@@ -1722,8 +1725,9 @@ void gameLogic(int *screenType) {
                             } // && ttype[t]<50
 
                             if (ttype[t] == 800) {
-                                // if (xx[0]+xx[2]>=-xx[14] && xx[0]<=fxmax+xx[14] &&
-                                // xx[1]+xx[3]>=-10-9000 && xx[1]<=fymax+10000){
+                                // if (xx[0]+xx[2]>=-xx[14] &&
+                                // xx[0]<=fxmax+xx[14] && xx[1]+xx[3]>=-10-9000
+                                // && xx[1]<=fymax+10000){
                                 if (mb > xx[9] - xx[0] * 2 - 2000 && mb < xx[9] + xx[1] - xx[0] * 2 + 2000 && ma + mnobia > xx[8] - 400 && ma < xx[8] + xx[1]) {
                                     ta[t] = -800000;
                                     ot(oto[4]);
@@ -1742,7 +1746,8 @@ void gameLogic(int *screenType) {
                                 }
                             }
                             //特殊的
-                            if (ttype[t] == 100) { // xx[9]+xx[1]+3000<mb && // && mb>xx[9]-xx[0]*2
+                            if (ttype[t] == 100) { // xx[9]+xx[1]+3000<mb && //
+                                                   // && mb>xx[9]-xx[0]*2
                                 if (mb > xx[9] - xx[0] * 2 - 2000 && mb < xx[9] + xx[1] - xx[0] * 2 + 2000 && ma + mnobia > xx[8] - 400 && ma < xx[8] + xx[1] && md <= 0) {
                                     if (txtype[t] == 0)
                                         tb[t] = mb + fy - 1200 - xx[1];
@@ -1766,7 +1771,8 @@ void gameLogic(int *screenType) {
                             } // 100
 
                             //敵出現
-                            if (ttype[t] == 101) { // xx[9]+xx[1]+3000<mb && // && mb>xx[9]-xx[0]*2
+                            if (ttype[t] == 101) { // xx[9]+xx[1]+3000<mb && //
+                                                   // && mb>xx[9]-xx[0]*2
                                 if (xx[17] == 1) {
                                     ot(oto[8]);
                                     ttype[t] = 3;
@@ -2043,8 +2049,7 @@ void gameLogic(int *screenType) {
                                     sgtype[t] = 1;
                                     sr[t] = 0;
                                 }
-                                if (((sxtype[t] == 3 && mb >= 30000) || (sxtype[t] == 4 && mb >= 25000)) && sgtype[t] == 0 && mhp >= 1 &&
-                                    ma + mnobia > xx[8] + xx[0] + 3000 - 300 && ma < xx[8] + sc[t] - xx[0]) {
+                                if (((sxtype[t] == 3 && mb >= 30000) || (sxtype[t] == 4 && mb >= 25000)) && sgtype[t] == 0 && mhp >= 1 && ma + mnobia > xx[8] + xx[0] + 3000 - 300 && ma < xx[8] + sc[t] - xx[0]) {
                                     sgtype[t] = 1;
                                     sr[t] = 0;
                                     if (sxtype[t] == 4)
@@ -2102,8 +2107,7 @@ void gameLogic(int *screenType) {
 
                             //入る土管
                             if (stype[t] == 50) {
-                                if (ma + mnobia > xx[8] + 2800 && ma < xx[8] + sc[t] - 3000 && mb + mnobib > xx[9] - 1000 && mb + mnobib < xx[9] + xx[1] + 3000 && isOnFloor &&
-                                    actaon[3] == 1 && mtype == 0) {
+                                if (ma + mnobia > xx[8] + 2800 && ma < xx[8] + sc[t] - 3000 && mb + mnobib > xx[9] - 1000 && mb + mnobib < xx[9] + xx[1] + 3000 && isOnFloor && actaon[3] == 1 && mtype == 0) {
                                     //飛び出し
                                     if (sxtype[t] == 0) {
                                         mtype = 100;
@@ -2143,8 +2147,7 @@ void gameLogic(int *screenType) {
 
                             //入る土管(左から)
                             if (stype[t] == 40) {
-                                if (ma + mnobia > xx[8] - 300 && ma < xx[8] + sc[t] - 1000 && mb > xx[9] + 1000 && mb + mnobib < xx[9] + xx[1] + 4000 && isOnFloor &&
-                                    actaon[4] == 1 && mtype == 0) { // end();
+                                if (ma + mnobia > xx[8] - 300 && ma < xx[8] + sc[t] - 1000 && mb > xx[9] + 1000 && mb + mnobib < xx[9] + xx[1] + 4000 && isOnFloor && actaon[4] == 1 && mtype == 0) { // end();
                                     //飛び出し
                                     if (sxtype[t] == 0) {
                                         mtype = 500;
@@ -2362,9 +2365,12 @@ void gameLogic(int *screenType) {
 
                                 /*
                                 case 4:
-                                if (srmove[t]==0){srmuki[t]=0;}else{srmuki[t]=1;}
-                                if (sra[t]-fx<-1100-src[t]){sra[t]=fymax+fx+scrollx;}
-                                if (sra[t]-fx>24000+scrollx){sra[t]=-1100-src[t]+fx;}
+                                if
+                                (srmove[t]==0){srmuki[t]=0;}else{srmuki[t]=1;}
+                                if
+                                (sra[t]-fx<-1100-src[t]){sra[t]=fymax+fx+scrollx;}
+                                if
+                                (sra[t]-fx>24000+scrollx){sra[t]=-1100-src[t]+fx;}
                                 break;
                                 */
 
@@ -2544,8 +2550,7 @@ void gameLogic(int *screenType) {
                         //敵キャラ適用
                         for (tt = 0; tt < amax; tt++) {
                             if (azimentype[tt] == 1) {
-                                if (aa[tt] + anobia[tt] - fx > xx[8] + xx[0] && aa[tt] - fx < xx[8] + xx[12] - xx[0] && ab[tt] + anobib[tt] > xx[11] - 100 &&
-                                    ab[tt] + anobib[tt] < xx[11] + xx[1] + 500 && ad[tt] >= -100) {
+                                if (aa[tt] + anobia[tt] - fx > xx[8] + xx[0] && aa[tt] - fx < xx[8] + xx[12] - xx[0] && ab[tt] + anobib[tt] > xx[11] - 100 && ab[tt] + anobib[tt] < xx[11] + xx[1] + 500 && ad[tt] >= -100) {
                                     ab[tt] = xx[9] - anobib[tt] + 100;
                                     ad[tt] = 0;
                                     axzimen[tt] = 1;
@@ -2661,8 +2666,7 @@ void gameLogic(int *screenType) {
                                         xx[8] = aa[tt] - fx;
                                         xx[9] = ab[tt] - fy;
                                         if (t != tt) {
-                                            if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 &&
-                                                ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
+                                            if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
                                                 aa[tt] = -800000;
                                                 ot(oto[6]);
                                             }
@@ -2789,8 +2793,7 @@ void gameLogic(int *screenType) {
                                     xx[8] = aa[tt] - fx;
                                     xx[9] = ab[tt] - fy;
                                     if (t != tt && atype[tt] >= 100) {
-                                        if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] &&
-                                            ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
+                                        if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
                                             // aa[tt]=-800000;
                                             amuki[tt] = 1;
                                             aa[tt] = aa[t] + 300;
@@ -2890,8 +2893,7 @@ void gameLogic(int *screenType) {
                                         xx[8] = aa[tt] - fx;
                                         xx[9] = ab[tt] - fy;
                                         if (t != tt && atype[tt] == 102) {
-                                            if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 &&
-                                                ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
+                                            if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12] + 1500) {
                                                 aa[tt] = -800000;
                                                 axtype[t] = 1;
                                                 ad[t] = -1600;
@@ -3063,8 +3065,7 @@ void gameLogic(int *screenType) {
                                         xx[8] = aa[tt] - fx;
                                         xx[9] = ab[tt] - fy;
                                         if (t != tt) {
-                                            if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 &&
-                                                ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12]) {
+                                            if (aa[t] + anobia[t] - fx > xx[8] + xx[0] * 2 && aa[t] - fx < xx[8] + anobia[tt] - xx[0] * 2 && ab[t] + anobib[t] - fy > xx[9] + xx[5] && ab[t] + anobib[t] - fy < xx[9] + xx[1] * 3 + xx[12]) {
                                                 if (atype[tt] == 0 || atype[tt] == 4) {
                                                     atype[tt] = 90; // ot(oto[6]);
                                                     anobia[tt] = 6400;
@@ -3114,7 +3115,8 @@ void gameLogic(int *screenType) {
                                 if (axtype[t]==1)ad[t]=-1600;
                                 if (axtype[t]==2){
                                 atm[t]+=1;
-                                if (atm[t]>=2){atm[t]=0;ad[t]=-1600;}else{ad[t]=-1000;}
+                                if
+                                (atm[t]>=2){atm[t]=0;ad[t]=-1600;}else{ad[t]=-1000;}
                                 }
                                 }
 
@@ -3174,8 +3176,10 @@ void gameLogic(int *screenType) {
                                 case 5:
                                 xx[10]=120;atm[t]++;
                                 if (axtype[t]==2){xx[10]=200;azimentype[t]=2;}
-                                if (ma+mnobia>=aa[t]-fx && ma<=aa[t]+anobia[t]-fx &&
-                                mb+mnobib+1000<ab[t]-fy){ xx[10]=300; if (axtype[t]>=1){
+                                if (ma+mnobia>=aa[t]-fx &&
+                                ma<=aa[t]+anobia[t]-fx &&
+                                mb+mnobib+1000<ab[t]-fy){ xx[10]=300; if
+                                (axtype[t]>=1){
                                 //xx[10]=240;
                                 if (atm[t]>=16){amuki[t]+=1;if
                                 (amuki[t]>=2)amuki[t]=0;atm[t]=0;
@@ -3215,7 +3219,8 @@ void gameLogic(int *screenType) {
                                 if (atm[t]>=xx[15]){
                                 for (t3=0;t3<=xx[17];t3++){
                                 xx[16]=300;xx[22]=rand(xx[16])*5/4-xx[16]/4;
-                                a2tm[t]+=1;if (a2tm[t]>=1){xx[22]=-xx[22];a2tm[t]=-1;}
+                                a2tm[t]+=1;if
+                                (a2tm[t]>=1){xx[22]=-xx[22];a2tm[t]=-1;}
                                 cyobi(aa[t]+amuki[t]*anobia[t]/2,ab[t]+600,xx[22],-400-rand(600),0,80,1,60);
                                 //if ((xx[16]==0) || t3==xx[16])atm[t]=0;
                                 }//t
@@ -3309,10 +3314,8 @@ void gameLogic(int *screenType) {
                             xx[12] = md;
                         xx[25] = 0;
 
-                        if (ma + mnobia > xx[8] + xx[0] * 2 && ma < xx[8] + anobia[t] - xx[0] * 2 && mb + mnobib > xx[9] - xx[5] && mb + mnobib < xx[9] + xx[1] + xx[12] &&
-                            (mmutekitm <= 0 || md >= 100) && abrocktm[t] <= 0) {
-                            if (atype[t] != 4 && atype[t] != 9 && atype[t] != 10 && (atype[t] <= 78 || atype[t] == 85) && !isOnFloor &&
-                                mtype != 200) { // && atype[t]!=4 && atype[t]!=7){
+                        if (ma + mnobia > xx[8] + xx[0] * 2 && ma < xx[8] + anobia[t] - xx[0] * 2 && mb + mnobib > xx[9] - xx[5] && mb + mnobib < xx[9] + xx[1] + xx[12] && (mmutekitm <= 0 || md >= 100) && abrocktm[t] <= 0) {
+                            if (atype[t] != 4 && atype[t] != 9 && atype[t] != 10 && (atype[t] <= 78 || atype[t] == 85) && !isOnFloor && mtype != 200) { // && atype[t]!=4 && atype[t]!=7){
 
                                 if (atype[t] == 0) {
                                     if (axtype[t] == 0)
@@ -3388,7 +3391,8 @@ void gameLogic(int *screenType) {
                                     actaon[2] = 0;
                                 }
                             }
-                            // if (atype[t]==200){mb=xx[9]-900-anobib[t];md=-2400;}
+                            // if
+                            // (atype[t]==200){mb=xx[9]-900-anobib[t];md=-2400;}
                         }
                         // if (aa[t]+anobia[t]-fx>xx[8]-xx[0] &&
                         // aa[t]-fx<xx[8]){md=-1000;}//aa[t]=-9000000;
@@ -3405,8 +3409,7 @@ void gameLogic(int *screenType) {
                             xx[16] = -3200;
                         if (atype[t] == 85)
                             xx[16] = -anobib[t] + 6000;
-                        if (ma + mnobia > xx[8] + xx[4] && ma < xx[8] + anobia[t] - xx[4] && mb < xx[9] + anobib[t] + xx[15] && mb + mnobib > xx[9] + anobib[t] - xx[0] + xx[16] &&
-                            anotm[t] <= 0 && abrocktm[t] <= 0) {
+                        if (ma + mnobia > xx[8] + xx[4] && ma < xx[8] + anobia[t] - xx[4] && mb < xx[9] + anobib[t] + xx[15] && mb + mnobib > xx[9] + anobib[t] - xx[0] + xx[16] && anotm[t] <= 0 && abrocktm[t] <= 0) {
                             if (mmutekion == 1) {
                                 aa[t] = -9000000;
                             }
@@ -3520,7 +3523,8 @@ void gameLogic(int *screenType) {
                                     }
                                 }
                             }
-                            // else if (mmutekitm>=0 && mmutekitm<=2){mmutekitm+=1;}
+                            // else if (mmutekitm>=0 &&
+                            // mmutekitm<=2){mmutekitm+=1;}
                             //アイテム
                             if (atype[t] >= 100 && atype[t] <= 199) {
 
@@ -3593,7 +3597,8 @@ void gameLogic(int *screenType) {
                                 if (atype[t]==104){mztm=120;mztype=1;}
                                 if (atype[t]==105){mztm=160;mztype=2;}
 
-                                if (atype[t]==120){mtype=3;mnobia=3800;mnobib=2300;}
+                                if
+                                (atype[t]==120){mtype=3;mnobia=3800;mnobib=2300;}
 
                                 if (atype[t]==130){msoubi=1;}
                                 if (atype[t]==131){msoubi=2;}
@@ -3695,6 +3700,7 @@ void gameLogic(int *screenType) {
                 bgmchange(otom[5]);
             }
             if (xx[30] <= -400) {
+                Mix_HaltMusic();
                 *screenType = TITLE_SCREEN;
                 nokori = 2;
                 maintm = 0;
@@ -3706,82 +3712,59 @@ void gameLogic(int *screenType) {
             if (maintm >= 30) {
                 maintm = 0;
                 *screenType = GAME_SCREEN;
-                zxon = 0;
+                reload = 0;
             }
             break;
         case TITLE_SCREEN:
             maintm++;
-            xx[0] = 0;
+            stagecolor = 1;
+            stc = 0;
             if (maintm <= 10) {
                 maintm = 11;
                 sta = 1;
                 stb = 1;
-                stc = 0;
                 over = 0;
             }
 
             if (CheckHitKey(KEY_INPUT_1)) {
                 sta = 1;
                 stb = 1;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_2)) {
+            } else if (CheckHitKey(KEY_INPUT_2)) {
                 sta = 1;
                 stb = 2;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_3)) {
+            } else if (CheckHitKey(KEY_INPUT_3)) {
                 sta = 1;
                 stb = 3;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_4)) {
+            } else if (CheckHitKey(KEY_INPUT_4)) {
                 sta = 1;
                 stb = 4;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_5)) {
+            } else if (CheckHitKey(KEY_INPUT_5)) {
                 sta = 2;
                 stb = 1;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_6)) {
+            } else if (CheckHitKey(KEY_INPUT_6)) {
                 sta = 2;
                 stb = 2;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_7)) {
+            } else if (CheckHitKey(KEY_INPUT_7)) {
                 sta = 2;
                 stb = 3;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_8)) {
+            } else if (CheckHitKey(KEY_INPUT_8)) {
                 sta = 2;
                 stb = 4;
-                stc = 0;
-            }
-            if (CheckHitKey(KEY_INPUT_9)) {
+            } else if (CheckHitKey(KEY_INPUT_9)) {
                 sta = 3;
                 stb = 1;
-                stc = 0;
-            }
-
-            if (CheckHitKey(KEY_INPUT_0)) {
-                xx[0] = 1;
+            } else if (CheckHitKey(KEY_INPUT_0)) {
+                startgame = true;
                 over = 1;
-            }
-            // if (CheckHitKeyAll() == 0){end();}
-            if (CheckHitKey(KEY_INPUT_RETURN)) {
-                xx[0] = 1;
-            }
-            // if (CheckHitKey(KEY_INPUT_SPACE)==1){xx[0]=1;}
-            if (CheckHitKey(KEY_INPUT_Z)) {
-                xx[0] = 1;
+            } else if (CheckHitKey(KEY_INPUT_RETURN)) {
+                startgame = true;
+            } else if (CheckHitKey(KEY_INPUT_Z)) {
+                startgame = true;
             }
 
-            if (xx[0] == 1) {
+            if (startgame) {
                 *screenType = LEVEL_TRANSITION;
-                zxon = 0;
+                reload = 0;
                 maintm = 0;
                 nokori = 2;
 
@@ -3804,28 +3787,26 @@ void tekizimen(int last_idx) {
 
             xx[8] = sa[t] - fx;
             xx[9] = sb[t] - fy;
-            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] - xx[0] && aa[last_idx] - fx < xx[8] + xx[2] && ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] * 3 / 4 &&
-                ab[last_idx] - fy < xx[9] + sd[t] - xx[2]) {
+            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] - xx[0] && aa[last_idx] - fx < xx[8] + xx[2] && ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] * 3 / 4 && ab[last_idx] - fy < xx[9] + sd[t] - xx[2]) {
                 aa[last_idx] = xx[8] - xx[0] - anobia[last_idx] + fx;
                 amuki[last_idx] = 0;
             }
-            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + sc[t] - xx[0] && aa[last_idx] - fx < xx[8] + sc[t] + xx[0] &&
-                ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] * 3 / 4 && ab[last_idx] - fy < xx[9] + sd[t] - xx[2]) {
+            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + sc[t] - xx[0] && aa[last_idx] - fx < xx[8] + sc[t] + xx[0] && ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] * 3 / 4 && ab[last_idx] - fy < xx[9] + sd[t] - xx[2]) {
                 aa[last_idx] = xx[8] + sc[t] + xx[0] + fx;
                 amuki[last_idx] = 1;
             }
-            // if (aa[last_idx]+anobia[last_idx]-fx>xx[8]+xx[0] && aa[last_idx]-fx<xx[8]+sc[t]-xx[0]
-            // && ab[last_idx]+anobib[last_idx]-fy>xx[9] && ab[last_idx]+anobib[last_idx]-fy<xx[9]+xx[1] &&
+            // if (aa[last_idx]+anobia[last_idx]-fx>xx[8]+xx[0] &&
+            // aa[last_idx]-fx<xx[8]+sc[t]-xx[0]
+            // && ab[last_idx]+anobib[last_idx]-fy>xx[9] &&
+            // ab[last_idx]+anobib[last_idx]-fy<xx[9]+xx[1] &&
             // ad[last_idx]>=-100){ab[last_idx]=sb[t]-fy-anobib[last_idx]+100+fy;ad[last_idx]=0;}//isOnFloor=1;}
-            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + sc[t] - xx[0] && ab[last_idx] + anobib[last_idx] - fy > xx[9] &&
-                ab[last_idx] + anobib[last_idx] - fy < xx[9] + sd[t] - xx[1] && ad[last_idx] >= -100) {
+            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + sc[t] - xx[0] && ab[last_idx] + anobib[last_idx] - fy > xx[9] && ab[last_idx] + anobib[last_idx] - fy < xx[9] + sd[t] - xx[1] && ad[last_idx] >= -100) {
                 ab[last_idx] = sb[t] - fy - anobib[last_idx] + 100 + fy;
                 ad[last_idx] = 0;
                 axzimen[last_idx] = 1;
             }
 
-            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + sc[t] - xx[0] && ab[last_idx] - fy > xx[9] + sd[t] - xx[1] &&
-                ab[last_idx] - fy < xx[9] + sd[t] + xx[0]) {
+            if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + sc[t] - xx[0] && ab[last_idx] - fy > xx[9] + sd[t] - xx[1] && ab[last_idx] - fy < xx[9] + sd[t] + xx[0]) {
                 ab[last_idx] = xx[9] + sd[t] + xx[0] + fy;
                 if (ad[last_idx] < 0) {
                     ad[last_idx] = -ad[last_idx] * 2 / 3;
@@ -3845,11 +3826,11 @@ void tekizimen(int last_idx) {
             if (atype[last_idx] != 86 && atype[last_idx] != 90 && ttype[t] != 140) {
                 //上
                 if (ttype[t] != 7) {
-                    // if (ttype[t]==117 && txtype[last_idx]==1){ad[last_idx]=-1500;}
+                    // if (ttype[t]==117 &&
+                    // txtype[last_idx]==1){ad[last_idx]=-1500;}
                     if (!(ttype[t] == 117)) {
                         // if (!(ttype[t]==120 && txtype[last_idx]==0)){
-                        if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + xx[1] - xx[0] * 1 && ab[last_idx] + anobib[last_idx] - fy > xx[9] &&
-                            ab[last_idx] + anobib[last_idx] - fy < xx[9] + xx[1] && ad[last_idx] >= -100) {
+                        if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + xx[1] - xx[0] * 1 && ab[last_idx] + anobib[last_idx] - fy > xx[9] && ab[last_idx] + anobib[last_idx] - fy < xx[9] + xx[1] && ad[last_idx] >= -100) {
                             ab[last_idx] = xx[9] - anobib[last_idx] + 100 + fy;
                             ad[last_idx] = 0;
                             axzimen[last_idx] = 1;
@@ -3864,8 +3845,7 @@ void tekizimen(int last_idx) {
                 }
                 //下
                 if (ttype[t] != 117) {
-                    if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + xx[1] - xx[0] * 1 && ab[last_idx] - fy > xx[9] + xx[1] - xx[1] &&
-                        ab[last_idx] - fy < xx[9] + xx[1] + xx[0]) {
+                    if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[0] && aa[last_idx] - fx < xx[8] + xx[1] - xx[0] * 1 && ab[last_idx] - fy > xx[9] + xx[1] - xx[1] && ab[last_idx] - fy < xx[9] + xx[1] + xx[0]) {
                         ab[last_idx] = xx[9] + xx[1] + xx[0] + fy;
                         if (ad[last_idx] < 0) {
                             ad[last_idx] = 0;
@@ -3880,15 +3860,13 @@ void tekizimen(int last_idx) {
                 //左右
                 xx[27] = 0;
                 if ((atype[last_idx] >= 100 || (ttype[t] != 7 || (ttype[t] == 7 && atype[last_idx] == 2))) && ttype[t] != 117) {
-                    if (aa[last_idx] + anobia[last_idx] - fx > xx[8] && aa[last_idx] - fx < xx[8] + xx[2] && ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] / 2 - xx[0] &&
-                        ab[last_idx] - fy < xx[9] + xx[2]) {
+                    if (aa[last_idx] + anobia[last_idx] - fx > xx[8] && aa[last_idx] - fx < xx[8] + xx[2] && ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] / 2 - xx[0] && ab[last_idx] - fy < xx[9] + xx[2]) {
                         aa[last_idx] = xx[8] - anobia[last_idx] + fx;
                         ac[last_idx] = 0;
                         amuki[last_idx] = 0;
                         xx[27] = 1;
                     }
-                    if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[1] - xx[0] * 2 && aa[last_idx] - fx < xx[8] + xx[1] &&
-                        ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] / 2 - xx[0] && ab[last_idx] - fy < xx[9] + xx[2]) {
+                    if (aa[last_idx] + anobia[last_idx] - fx > xx[8] + xx[1] - xx[0] * 2 && aa[last_idx] - fx < xx[8] + xx[1] && ab[last_idx] + anobib[last_idx] - fy > xx[9] + xx[1] / 2 - xx[0] && ab[last_idx] - fy < xx[9] + xx[2]) {
                         aa[last_idx] = xx[8] + xx[1] + fx;
                         ac[last_idx] = 0;
                         amuki[last_idx] = 1;
@@ -3912,8 +3890,7 @@ void tekizimen(int last_idx) {
                 }
             }
             if (atype[last_idx] == 86 || atype[last_idx] == 90) {
-                if (aa[last_idx] + anobia[last_idx] - fx > xx[8] && aa[last_idx] - fx < xx[8] + xx[1] && ab[last_idx] + anobib[last_idx] - fy > xx[9] &&
-                    ab[last_idx] - fy < xx[9] + xx[1]) {
+                if (aa[last_idx] + anobia[last_idx] - fx > xx[8] && aa[last_idx] - fx < xx[8] + xx[1] && ab[last_idx] + anobib[last_idx] - fy > xx[9] && ab[last_idx] - fy < xx[9] + xx[1]) {
                     ot(oto[3]);
                     eyobi(ta[t] + 1200, tb[t] + 1200, 300, -1000, 0, 160, 1000, 1000, 1, 120);
                     eyobi(ta[t] + 1200, tb[t] + 1200, -300, -1000, 0, 160, 1000, 1000, 1, 120);
@@ -3925,8 +3902,7 @@ void tekizimen(int last_idx) {
         }
         //剣とってクリア
         if (ttype[t] == 140) {
-            if (ab[last_idx] - fy > xx[9] - xx[0] * 2 - 2000 && ab[last_idx] - fy < xx[9] + xx[1] - xx[0] * 2 + 2000 && aa[last_idx] + anobia[last_idx] - fx > xx[8] - 400 &&
-                aa[last_idx] - fx < xx[8] + xx[1]) {
+            if (ab[last_idx] - fy > xx[9] - xx[0] * 2 - 2000 && ab[last_idx] - fy < xx[9] + xx[1] - xx[0] * 2 + 2000 && aa[last_idx] + anobia[last_idx] - fx > xx[8] - 400 && aa[last_idx] - fx < xx[8] + xx[1]) {
                 ta[t] = -800000; // ot(oto[4]);
                 sracttype[20] = 1;
                 sron[20] = 1;
@@ -4003,14 +3979,6 @@ void fillarc(int a, int b, int c, int d) { filledEllipseColor(screen, a, b, c, d
 
 void FillScreen() { SDL_FillRect(screen, 0, color); }
 
-//画像の読み込み
-/*SDL_Surface *loadimage(string x) {
-    // mgrap[a]=LoadGraph(b);
-    return LoadGraph(x.c_str());
-}*/
-
-/*SDL_Surface *loadimage(SDL_Surface *a, int x, int y, int r, int z) { return DerivationGraph(x, y, r, z, a); }*/
-
 //画像表示
 void drawimage(SDL_Surface *mx, int a, int b) {
     if (mirror == 0)
@@ -4028,14 +3996,6 @@ void drawimage(SDL_Surface *mx, int a, int b, int c, int d, int e, int f) {
         DrawTurnGraph(a, b, m);
     SDL_FreeSurface(m);
 }
-
-/*
-//文字
-void str(char d[],int a,int b){
-//char d[]=c;
-DrawString(a,b,d,color);
-}
-*/
 
 //文字
 void str(string x, int a, int b) {
@@ -4145,7 +4105,7 @@ void stagecls() {
 } // stagecls()
 
 //ステージロード
-void stage() {
+void stage(int sta, int stb, int stc) {
     int t, tt;
 
     // fzx=6000*100;
@@ -4156,7 +4116,7 @@ void stage() {
 
     // 1-レンガ,2-コイン,3-空,4-土台//5-6地面//7-隠し//
 
-    stagep();
+    stagep(sta, stb, stc);
 
     for (tt = 0; tt <= 1000; tt++) {
         for (t = 0; t <= 16; t++) {
@@ -4284,7 +4244,7 @@ void stage() {
 
 } // stage()
 
-void stagep() {
+void stagep(int sta, int stb, int stc) {
     int t, tt;
 
     //ステージロード
@@ -4298,2952 +4258,2191 @@ void stagep() {
 
     // 1-レンガ,2-コイン,3-空,4-土台//5-6地面//7-隠し//
 
-    // 1-1
-    if (sta == 1 && stb == 1 && stc == 0) {
+    if (sta == 1) {
+        // 1-1
+        if (stb == 1 && stc == 0) {
 
-        // new byte stagedate[16][801]={
+            byte stagedatex[17][1001];
+            getStageData(sta, stb, stc, stagedatex);
+            //追加情報
+            tyobi(8 * 29, 9 * 29 - 12, 100);
+            txtype[tco] = 2;
+            tyobi(13 * 29, 9 * 29 - 12, 102);
+            txtype[tco] = 0;
+            tyobi(14 * 29, 5 * 29 - 12, 101);
+            tyobi(35 * 29, 8 * 29 - 12, 110);
+            tyobi(47 * 29, 9 * 29 - 12, 103);
+            tyobi(59 * 29, 9 * 29 - 12, 112);
+            tyobi(67 * 29, 9 * 29 - 12, 104);
 
-        //                                                                                                                                                                                     中間
-        byte stagedatex[17][1001] = {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 82, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0,  50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0, 0, 0,  98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 98, 98, 98, 1, 1, 0, 0, 0, 1, 1,  1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0, 0, 98, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0,  0, 0, 0, 0, 0, 98, 0, 0, 0, 1, 98, 1,  2, 1, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0,
-             0, 1, 98, 1, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,  98, 0, 0, 0, 0, 0, 0, 1, 98, 0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0,  0, 0, 0, 0, 0, 0,  1, 1, 2, 1, 0,  0,  0, 0, 0, 0, 0, 0, 4, 4,  4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 80, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
-             0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,  4, 0, 0, 0, 4, 0,
-             7, 7,  7, 7, 7, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4,  4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 83, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 4, 4,
-             0, 0, 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 4, 4,  4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 50, 0,  0, 0,  0, 0, 50, 0, 0,  81, 41, 0,  0, 0, 0, 0, 81, 98, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 81, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0,  0, 0, 50, 0, 50, 0,  0,  51, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 81, 0,  0, 0, 4, 4, 4, 0, 0, 0, 4, 4,
-             0, 0,  0, 0, 0, 41, 0, 0, 0, 0, 0,  50, 0, 50, 0, 0, 41, 0, 4,  4,  4,  4,  4, 4, 4, 4, 4,  0,  0, 0, 0, 0, 0, 4,  81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5,
-             5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5,
-             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5},
-            {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6,
-             6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6,
-             6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+            sco = 0;
+            t = sco;
+            sa[t] = 20 * 29 * 100 + 500;
+            sb[t] = -6000;
+            sc[t] = 5000;
+            sd[t] = 70000;
+            stype[t] = 100;
+            sco++;
+            t = sco;
+            sa[t] = 54 * 29 * 100 - 500;
+            sb[t] = -6000;
+            sc[t] = 7000;
+            sd[t] = 70000;
+            stype[t] = 101;
+            sco++;
+            t = sco;
+            sa[t] = 112 * 29 * 100 + 1000;
+            sb[t] = -6000;
+            sc[t] = 3000;
+            sd[t] = 70000;
+            stype[t] = 102;
+            sco++;
+            t = sco;
+            sa[t] = 117 * 29 * 100;
+            sb[t] = (2 * 29 - 12) * 100 - 1500;
+            sc[t] = 15000;
+            sd[t] = 3000;
+            stype[t] = 103;
+            sco++;
+            t = sco;
+            sa[t] = 125 * 29 * 100;
+            sb[t] = -6000;
+            sc[t] = 9000;
+            sd[t] = 70000;
+            stype[t] = 101;
+            sco++;
+            // t=sco;sa[t]=77*29*100;sb[t]=(6*29-12)*100-1500;sc[t]=12000;sd[t]=3000;stype[t]=103;sco++;
+            t = 28;
+            sa[t] = 29 * 29 * 100 + 500;
+            sb[t] = (9 * 29 - 12) * 100;
+            sc[t] = 6000;
+            sd[t] = 12000 - 200;
+            stype[t] = 50;
+            sco++;
+            t = sco;
+            sa[t] = 49 * 29 * 100;
+            sb[t] = (5 * 29 - 12) * 100;
+            sc[t] = 9000 - 1;
+            sd[t] = 3000;
+            stype[t] = 51;
+            sgtype[t] = 0;
+            sco++;
+            t = sco;
+            sa[t] = 72 * 29 * 100;
+            sb[t] = (13 * 29 - 12) * 100;
+            sc[t] = 3000 * 5 - 1;
+            sd[t] = 3000;
+            stype[t] = 52;
+            sco++;
 
-        //追加情報
-        tyobi(8 * 29, 9 * 29 - 12, 100);
-        txtype[tco] = 2;
-        tyobi(13 * 29, 9 * 29 - 12, 102);
-        txtype[tco] = 0;
-        tyobi(14 * 29, 5 * 29 - 12, 101);
-        tyobi(35 * 29, 8 * 29 - 12, 110);
-        tyobi(47 * 29, 9 * 29 - 12, 103);
-        tyobi(59 * 29, 9 * 29 - 12, 112);
-        tyobi(67 * 29, 9 * 29 - 12, 104);
+            bco = 0;
+            t = bco;
+            ba[t] = 27 * 29 * 100;
+            bb[t] = (9 * 29 - 12) * 100;
+            btype[t] = 0;
+            bxtype[t] = 0;
+            bco++;
+            t = bco;
+            ba[t] = 103 * 29 * 100;
+            bb[t] = (5 * 29 - 12 + 10) * 100;
+            btype[t] = 80;
+            bxtype[t] = 0;
+            bco++;
+            // t=bco;ba[t]=13*29*100;bb[t]=(5*29-12)*100;btype[t]=81;bxtype[t]=0;bco++;
 
-        sco = 0;
-        t = sco;
-        sa[t] = 20 * 29 * 100 + 500;
-        sb[t] = -6000;
-        sc[t] = 5000;
-        sd[t] = 70000;
-        stype[t] = 100;
-        sco++;
-        t = sco;
-        sa[t] = 54 * 29 * 100 - 500;
-        sb[t] = -6000;
-        sc[t] = 7000;
-        sd[t] = 70000;
-        stype[t] = 101;
-        sco++;
-        t = sco;
-        sa[t] = 112 * 29 * 100 + 1000;
-        sb[t] = -6000;
-        sc[t] = 3000;
-        sd[t] = 70000;
-        stype[t] = 102;
-        sco++;
-        t = sco;
-        sa[t] = 117 * 29 * 100;
-        sb[t] = (2 * 29 - 12) * 100 - 1500;
-        sc[t] = 15000;
-        sd[t] = 3000;
-        stype[t] = 103;
-        sco++;
-        t = sco;
-        sa[t] = 125 * 29 * 100;
-        sb[t] = -6000;
-        sc[t] = 9000;
-        sd[t] = 70000;
-        stype[t] = 101;
-        sco++;
-        // t=sco;sa[t]=77*29*100;sb[t]=(6*29-12)*100-1500;sc[t]=12000;sd[t]=3000;stype[t]=103;sco++;
-        t = 28;
-        sa[t] = 29 * 29 * 100 + 500;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 12000 - 200;
-        stype[t] = 50;
-        sco++;
-        t = sco;
-        sa[t] = 49 * 29 * 100;
-        sb[t] = (5 * 29 - 12) * 100;
-        sc[t] = 9000 - 1;
-        sd[t] = 3000;
-        stype[t] = 51;
-        sgtype[t] = 0;
-        sco++;
-        t = sco;
-        sa[t] = 72 * 29 * 100;
-        sb[t] = (13 * 29 - 12) * 100;
-        sc[t] = 3000 * 5 - 1;
-        sd[t] = 3000;
-        stype[t] = 52;
-        sco++;
-
-        bco = 0;
-        t = bco;
-        ba[t] = 27 * 29 * 100;
-        bb[t] = (9 * 29 - 12) * 100;
-        btype[t] = 0;
-        bxtype[t] = 0;
-        bco++;
-        t = bco;
-        ba[t] = 103 * 29 * 100;
-        bb[t] = (5 * 29 - 12 + 10) * 100;
-        btype[t] = 80;
-        bxtype[t] = 0;
-        bco++;
-        // t=bco;ba[t]=13*29*100;bb[t]=(5*29-12)*100;btype[t]=81;bxtype[t]=0;bco++;
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
+            for (tt = 0; tt <= 1000; tt++) {
+                for (t = 0; t <= 16; t++) {
+                    stagedate[t][tt] = stagedatex[t][tt];
+                }
             }
-        }
 
-    } // sta1
+            // sta1
+        } else if (stb == 2) {
+            // 1-2(地上)
+            if (stc == 0) {
 
-    // 1-2(地上)
-    if (sta == 1 && stb == 2 && stc == 0) {
+                //マリ　地上　入れ
+                bgmchange(otom[1]);
+                scrollx = 0 * 100;
 
-        //マリ　地上　入れ
-        // Mix_HaltMusic();
-        bgmchange(otom[1]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+                tco = 0;
+                //ヒント1
+                txtype[tco] = 1;
+                tyobi(4 * 29, 9 * 29 - 12, 300);
+                // tyobi(7*29,9*29-12,300);
 
-        scrollx = 0 * 100;
-        // ma=3000;mb=3000;
+                //毒1
+                tyobi(13 * 29, 8 * 29 - 12, 114);
 
-        byte stagedatex[17][1001] = {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 7},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5,
-             5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5,
-             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5},
-            {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6,
-             6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6,
-             6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+                // t=28;
+                sco = 0;
+                t = sco;
+                sa[t] = 14 * 29 * 100 + 500;
+                sb[t] = (9 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 12000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 1;
+                sco++;
+                t = sco;
+                sa[t] = 12 * 29 * 100;
+                sb[t] = (11 * 29 - 12) * 100;
+                sc[t] = 3000;
+                sd[t] = 6000 - 200;
+                stype[t] = 40;
+                sxtype[t] = 0;
+                sco++;
+                t = sco;
+                sa[t] = 14 * 29 * 100 + 1000;
+                sb[t] = -6000;
+                sc[t] = 5000;
+                sd[t] = 70000;
+                stype[t] = 100;
+                sxtype[t] = 1;
+                sco++;
 
-        tco = 0;
-        //ヒント1
-        txtype[tco] = 1;
-        tyobi(4 * 29, 9 * 29 - 12, 300);
-        // tyobi(7*29,9*29-12,300);
+                //ブロックもどき
+                // t=bco;ba[t]=7*29*100;bb[t]=(9*29-12)*100;btype[t]=82;bxtype[t]=0;bco++;
 
-        //毒1
-        tyobi(13 * 29, 8 * 29 - 12, 114);
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
 
-        // t=28;
-        sco = 0;
-        t = sco;
-        sa[t] = 14 * 29 * 100 + 500;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 12000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 1;
-        sco++;
-        t = sco;
-        sa[t] = 12 * 29 * 100;
-        sb[t] = (11 * 29 - 12) * 100;
-        sc[t] = 3000;
-        sd[t] = 6000 - 200;
-        stype[t] = 40;
-        sxtype[t] = 0;
-        sco++;
-        t = sco;
-        sa[t] = 14 * 29 * 100 + 1000;
-        sb[t] = -6000;
-        sc[t] = 5000;
-        sd[t] = 70000;
-        stype[t] = 100;
-        sxtype[t] = 1;
-        sco++;
+            } // sta2
 
-        //ブロックもどき
-        // t=bco;ba[t]=7*29*100;bb[t]=(9*29-12)*100;btype[t]=82;bxtype[t]=0;bco++;
+            // 1-2-1(地下)
+            else if (stc == 1) {
 
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
+                //マリ　地下　入れ
+                bgmchange(otom[2]);
+
+                scrollx = 4080 * 100;
+                ma = 6000;
+                mb = 3000;
+                stagecolor = 2;
+
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+
+                tco = 0;
+                txtype[tco] = 2;
+                tyobi(7 * 29, 9 * 29 - 12, 102);
+                tyobi(10 * 29, 9 * 29 - 12, 101);
+
+                txtype[tco] = 2;
+                tyobi(49 * 29, 9 * 29 - 12, 114);
+
+                for (t = 0; t >= -7; t--) {
+                    tyobi(53 * 29, t * 29 - 12, 1);
+                }
+
+                txtype[tco] = 1;
+                tyobi(80 * 29, 5 * 29 - 12, 104);
+                txtype[tco] = 2;
+                tyobi(78 * 29, 5 * 29 - 12, 102);
+
+                // txtype[tco]=1;tyobi(11*29,9*29-12,114);//毒1
+
+                sco = 0;
+                t = sco;
+                sa[t] = 2 * 29 * 100;
+                sb[t] = (13 * 29 - 12) * 100;
+                sc[t] = 3000 * 1 - 1;
+                sd[t] = 3000;
+                stype[t] = 52;
+                sco++;
+                // t=sco;sa[t]=19*29*100;sb[t]=(13*29-12)*100;sc[t]=3000*1-1;sd[t]=3000;stype[t]=52;sco++;
+                t = sco;
+                sa[t] = 24 * 29 * 100;
+                sb[t] = (13 * 29 - 12) * 100;
+                sc[t] = 3000 * 1 - 1;
+                sd[t] = 3000;
+                stype[t] = 52;
+                sco++;
+                t = sco;
+                sa[t] = 43 * 29 * 100 + 500;
+                sb[t] = -6000;
+                sc[t] = 3000;
+                sd[t] = 70000;
+                stype[t] = 102;
+                sxtype[t] = 1;
+                sco++;
+                t = sco;
+                sa[t] = 53 * 29 * 100 + 500;
+                sb[t] = -6000;
+                sc[t] = 3000;
+                sd[t] = 70000;
+                stype[t] = 102;
+                sxtype[t] = 2;
+                sco++;
+                t = sco;
+                sa[t] = 129 * 29 * 100;
+                sb[t] = (7 * 29 - 12) * 100;
+                sc[t] = 3000;
+                sd[t] = 6000 - 200;
+                stype[t] = 40;
+                sxtype[t] = 2;
+                sco++;
+                t = sco;
+                sa[t] = 154 * 29 * 100;
+                sb[t] = 3000;
+                sc[t] = 9000;
+                sd[t] = 3000;
+                stype[t] = 102;
+                sxtype[t] = 7;
+                sco++;
+
+                //ブロックもどき
+
+                t = 27;
+                sa[t] = 69 * 29 * 100;
+                sb[t] = (1 * 29 - 12) * 100;
+                sc[t] = 9000 * 2 - 1;
+                sd[t] = 3000;
+                stype[t] = 51;
+                sxtype[t] = 0;
+                sgtype[t] = 0;
+                sco++;
+                t = 28;
+                sa[t] = 66 * 29 * 100;
+                sb[t] = (1 * 29 - 12) * 100;
+                sc[t] = 9000 - 1;
+                sd[t] = 3000;
+                stype[t] = 51;
+                sxtype[t] = 1;
+                sgtype[t] = 0;
+                sco++;
+                t = 29;
+                sa[t] = 66 * 29 * 100;
+                sb[t] = (-2 * 29 - 12) * 100;
+                sc[t] = 9000 * 3 - 1;
+                sd[t] = 3000;
+                stype[t] = 51;
+                sxtype[t] = 2;
+                sgtype[t] = 0;
+                sco++;
+
+                // 26 ファイアー土管
+                t = 26;
+                sa[t] = 103 * 29 * 100 - 1500;
+                sb[t] = (9 * 29 - 12) * 100 - 2000;
+                sc[t] = 3000;
+                sd[t] = 3000;
+                stype[t] = 180;
+                sxtype[t] = 0;
+                sr[t] = 0;
+                sgtype[t] = 48;
+                sco++;
+                t = sco;
+                sa[t] = 102 * 29 * 100;
+                sb[t] = (9 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 12000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 2;
+                sco++;
+                t = sco;
+                sa[t] = 123 * 29 * 100;
+                sb[t] = (9 * 29 - 12) * 100;
+                sc[t] = 3000 * 5 - 1;
+                sd[t] = 3000 * 5;
+                stype[t] = 52;
+                sxtype[t] = 1;
+                sco++;
+
+                t = sco;
+                sa[t] = 131 * 29 * 100;
+                sb[t] = (1 * 29 - 12) * 100;
+                sc[t] = 4700;
+                sd[t] = 3000 * 8 - 700;
+                stype[t] = 1;
+                sxtype[t] = 0;
+                sco++;
+
+                // t=sco;sa[t]=44*29*100;sb[t]=-6000;sc[t]=9000;sd[t]=70000;stype[t]=102;sco++;
+
+                //オワタゾーン
+                t = sco;
+                sa[t] = 143 * 29 * 100;
+                sb[t] = (9 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 12000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 5;
+                sco++;
+                t = sco;
+                sa[t] = 148 * 29 * 100;
+                sb[t] = (9 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 12000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 5;
+                sco++;
+                t = sco;
+                sa[t] = 153 * 29 * 100;
+                sb[t] = (9 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 12000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 5;
+                sco++;
+
+                bco = 0;
+                t = bco;
+                ba[t] = 18 * 29 * 100;
+                bb[t] = (10 * 29 - 12) * 100;
+                btype[t] = 82;
+                bxtype[t] = 1;
+                bco++;
+                // t=bco;ba[t]=52*29*100;bb[t]=(2*29-12)*100;btype[t]=82;bxtype[t]=1;bco++;
+                t = bco;
+                ba[t] = 51 * 29 * 100 + 1000;
+                bb[t] = (2 * 29 - 12 + 10) * 100;
+                btype[t] = 80;
+                bxtype[t] = 1;
+                bco++;
+
+                //？ボール
+                t = bco;
+                ba[t] = 96 * 29 * 100 + 100;
+                bb[t] = (10 * 29 - 12) * 100;
+                btype[t] = 105;
+                bxtype[t] = 0;
+                bco++;
+
+                //リフト
+                srco = 0;
+                t = srco;
+                sra[t] = 111 * 29 * 100;
+                srb[t] = (8 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 5;
+                sre[t] = -300;
+                srco++;
+                t = srco;
+                sra[t] = 111 * 29 * 100;
+                srb[t] = (0 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 5;
+                sre[t] = -300;
+                srco++;
+                t = 10;
+                sra[t] = 116 * 29 * 100;
+                srb[t] = (4 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 1;
+                sracttype[t] = 5;
+                sre[t] = 300;
+                srco++;
+                t = 11;
+                sra[t] = 116 * 29 * 100;
+                srb[t] = (12 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 1;
+                sracttype[t] = 5;
+                sre[t] = 300;
+                srco++;
+
+                //ヒント1
+                // tyobi(4*29,9*29-12,300);
+                // tyobi(7*29,9*29-12,300);
+
+                //毒1
+                // tyobi(13*29,8*29-12,114);
+
+                // t=28;
+                // sco=0;
+                // t=sco;
+                // sa[t]=14*29*100+500;sb[t]=(9*29-12)*100;sc[t]=6000;sd[t]=12000-200;stype[t]=50;sxtype[t]=1;sco++;
+
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        //stagedate[t][tt] = 0;
+                        //stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+                // stagedatex[0][0];
+
+            } // sta1-2-1
+
+            // 1-2(地上)
+            else if (stc == 2) {
+
+                //マリ　地上　入れ
+                // Mix_HaltMusic();
+                bgmchange(otom[1]);
+                // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+
+                scrollx = 900 * 100;
+                ma = 7500;
+                mb = 3000 * 9;
+
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+
+                /*
+                //毒1
+                tyobi(13*29,8*29-12,114);
+
+                //t=28;
+                sco=0;
+                t=sco;sa[t]=14*29*100+500;sb[t]=(9*29-12)*100;sc[t]=6000;sd[t]=12000-200;stype[t]=50;sxtype[t]=1;sco++;
+                t=sco;sa[t]=12*29*100;sb[t]=(11*29-12)*100;sc[t]=3000;sd[t]=6000-200;stype[t]=40;sxtype[t]=0;sco++;
+                t=sco;sa[t]=14*29*100+1000;sb[t]=-6000;sc[t]=5000;sd[t]=70000;stype[t]=100;sxtype[t]=1;sco++;
+                */
+
+                t = sco;
+                sa[t] = 5 * 29 * 100 + 500;
+                sb[t] = -6000;
+                sc[t] = 3000;
+                sd[t] = 70000;
+                stype[t] = 102;
+                sxtype[t] = 8;
+                sco++;
+                //空飛ぶ土管
+                t = 28;
+                sa[t] = 44 * 29 * 100 + 500;
+                sb[t] = (10 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 9000 - 200;
+                stype[t] = 50;
+                sco++;
+
+                //ポールもどき
+                bco = 0;
+                t = bco;
+                ba[t] = 19 * 29 * 100;
+                bb[t] = (2 * 29 - 12) * 100;
+                btype[t] = 85;
+                bxtype[t] = 0;
+                bco++;
+
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+
+            } // sta2
+            //必要BGM+SE
+        } else if (stb == 3) {
+            // 1-3(地上)
+            if (stc == 6) {
+                stc = 0;
             }
-        }
-
-    } // sta2
-
-    // 1-2-1(地下)
-    if (sta == 1 && stb == 2 && stc == 1) {
-
-        //マリ　地下　入れ
-        bgmchange(otom[2]);
-
-        scrollx = 4080 * 100;
-        ma = 6000;
-        mb = 3000;
-        stagecolor = 2;
-
-        byte stagedatex[17][1001] = {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 0, 0, 0},
-            {1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-             1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 4, 4,  4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-             1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 98, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 44, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 54, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,  1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 98, 2, 2, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 7, 7, 7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 4, 4, 4, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,  0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 0},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 4, 0, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 1, 1, 4,  4, 4, 4, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0,  0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 4, 0, 0, 0, 0, 4, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 40, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 4, 4, 4, 4, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 1,  1, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {1, 0,  7, 0, 0, 0, 0, 0, 0, 0, 50, 0, 50, 0, 4, 0, 4, 0, 4, 0, 4, 0, 50, 0, 0, 4, 0, 4, 0, 4, 0, 4, 0, 0, 0, 0, 50, 50, 50, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 1, 1, 4, 4, 4, 4, 1, 1, 1, 1,  1,  0,  0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-             1, 1,  1, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 1, 1, 0, 0, 0, 0, 0, 1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-            {5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 5,
-             5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-             5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0},
-            {6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 0, 0, 0, 6, 6, 6,
-             6, 6, 6, 0, 0, 6, 6, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        };
-        //{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 6,
-        // 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // 0, 0, 0}
-
-        tco = 0;
-        txtype[tco] = 2;
-        tyobi(7 * 29, 9 * 29 - 12, 102);
-        tyobi(10 * 29, 9 * 29 - 12, 101);
-
-        txtype[tco] = 2;
-        tyobi(49 * 29, 9 * 29 - 12, 114);
-
-        for (t = 0; t >= -7; t--) {
-            tyobi(53 * 29, t * 29 - 12, 1);
-        }
-
-        txtype[tco] = 1;
-        tyobi(80 * 29, 5 * 29 - 12, 104);
-        txtype[tco] = 2;
-        tyobi(78 * 29, 5 * 29 - 12, 102);
-
-        // txtype[tco]=1;tyobi(11*29,9*29-12,114);//毒1
-
-        sco = 0;
-        t = sco;
-        sa[t] = 2 * 29 * 100;
-        sb[t] = (13 * 29 - 12) * 100;
-        sc[t] = 3000 * 1 - 1;
-        sd[t] = 3000;
-        stype[t] = 52;
-        sco++;
-        // t=sco;sa[t]=19*29*100;sb[t]=(13*29-12)*100;sc[t]=3000*1-1;sd[t]=3000;stype[t]=52;sco++;
-        t = sco;
-        sa[t] = 24 * 29 * 100;
-        sb[t] = (13 * 29 - 12) * 100;
-        sc[t] = 3000 * 1 - 1;
-        sd[t] = 3000;
-        stype[t] = 52;
-        sco++;
-        t = sco;
-        sa[t] = 43 * 29 * 100 + 500;
-        sb[t] = -6000;
-        sc[t] = 3000;
-        sd[t] = 70000;
-        stype[t] = 102;
-        sxtype[t] = 1;
-        sco++;
-        t = sco;
-        sa[t] = 53 * 29 * 100 + 500;
-        sb[t] = -6000;
-        sc[t] = 3000;
-        sd[t] = 70000;
-        stype[t] = 102;
-        sxtype[t] = 2;
-        sco++;
-        t = sco;
-        sa[t] = 129 * 29 * 100;
-        sb[t] = (7 * 29 - 12) * 100;
-        sc[t] = 3000;
-        sd[t] = 6000 - 200;
-        stype[t] = 40;
-        sxtype[t] = 2;
-        sco++;
-        t = sco;
-        sa[t] = 154 * 29 * 100;
-        sb[t] = 3000;
-        sc[t] = 9000;
-        sd[t] = 3000;
-        stype[t] = 102;
-        sxtype[t] = 7;
-        sco++;
-
-        //ブロックもどき
-
-        t = 27;
-        sa[t] = 69 * 29 * 100;
-        sb[t] = (1 * 29 - 12) * 100;
-        sc[t] = 9000 * 2 - 1;
-        sd[t] = 3000;
-        stype[t] = 51;
-        sxtype[t] = 0;
-        sgtype[t] = 0;
-        sco++;
-        t = 28;
-        sa[t] = 66 * 29 * 100;
-        sb[t] = (1 * 29 - 12) * 100;
-        sc[t] = 9000 - 1;
-        sd[t] = 3000;
-        stype[t] = 51;
-        sxtype[t] = 1;
-        sgtype[t] = 0;
-        sco++;
-        t = 29;
-        sa[t] = 66 * 29 * 100;
-        sb[t] = (-2 * 29 - 12) * 100;
-        sc[t] = 9000 * 3 - 1;
-        sd[t] = 3000;
-        stype[t] = 51;
-        sxtype[t] = 2;
-        sgtype[t] = 0;
-        sco++;
-
-        // 26 ファイアー土管
-        t = 26;
-        sa[t] = 103 * 29 * 100 - 1500;
-        sb[t] = (9 * 29 - 12) * 100 - 2000;
-        sc[t] = 3000;
-        sd[t] = 3000;
-        stype[t] = 180;
-        sxtype[t] = 0;
-        sr[t] = 0;
-        sgtype[t] = 48;
-        sco++;
-        t = sco;
-        sa[t] = 102 * 29 * 100;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 12000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 2;
-        sco++;
-        t = sco;
-        sa[t] = 123 * 29 * 100;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 3000 * 5 - 1;
-        sd[t] = 3000 * 5;
-        stype[t] = 52;
-        sxtype[t] = 1;
-        sco++;
-
-        t = sco;
-        sa[t] = 131 * 29 * 100;
-        sb[t] = (1 * 29 - 12) * 100;
-        sc[t] = 4700;
-        sd[t] = 3000 * 8 - 700;
-        stype[t] = 1;
-        sxtype[t] = 0;
-        sco++;
-
-        // t=sco;sa[t]=44*29*100;sb[t]=-6000;sc[t]=9000;sd[t]=70000;stype[t]=102;sco++;
-
-        //オワタゾーン
-        t = sco;
-        sa[t] = 143 * 29 * 100;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 12000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 5;
-        sco++;
-        t = sco;
-        sa[t] = 148 * 29 * 100;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 12000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 5;
-        sco++;
-        t = sco;
-        sa[t] = 153 * 29 * 100;
-        sb[t] = (9 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 12000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 5;
-        sco++;
-
-        bco = 0;
-        t = bco;
-        ba[t] = 18 * 29 * 100;
-        bb[t] = (10 * 29 - 12) * 100;
-        btype[t] = 82;
-        bxtype[t] = 1;
-        bco++;
-        // t=bco;ba[t]=52*29*100;bb[t]=(2*29-12)*100;btype[t]=82;bxtype[t]=1;bco++;
-        t = bco;
-        ba[t] = 51 * 29 * 100 + 1000;
-        bb[t] = (2 * 29 - 12 + 10) * 100;
-        btype[t] = 80;
-        bxtype[t] = 1;
-        bco++;
-
-        //？ボール
-        t = bco;
-        ba[t] = 96 * 29 * 100 + 100;
-        bb[t] = (10 * 29 - 12) * 100;
-        btype[t] = 105;
-        bxtype[t] = 0;
-        bco++;
-
-        //リフト
-        srco = 0;
-        t = srco;
-        sra[t] = 111 * 29 * 100;
-        srb[t] = (8 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 5;
-        sre[t] = -300;
-        srco++;
-        t = srco;
-        sra[t] = 111 * 29 * 100;
-        srb[t] = (0 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 5;
-        sre[t] = -300;
-        srco++;
-        t = 10;
-        sra[t] = 116 * 29 * 100;
-        srb[t] = (4 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 1;
-        sracttype[t] = 5;
-        sre[t] = 300;
-        srco++;
-        t = 11;
-        sra[t] = 116 * 29 * 100;
-        srb[t] = (12 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 1;
-        sracttype[t] = 5;
-        sre[t] = 300;
-        srco++;
-
-        //ヒント1
-        // tyobi(4*29,9*29-12,300);
-        // tyobi(7*29,9*29-12,300);
-
-        //毒1
-        // tyobi(13*29,8*29-12,114);
-
-        // t=28;
-        // sco=0;
-        // t=sco;
-        // sa[t]=14*29*100+500;sb[t]=(9*29-12)*100;sc[t]=6000;sd[t]=12000-200;stype[t]=50;sxtype[t]=1;sco++;
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-        // stagedatex[0][0];
-
-    } // sta1-2-1
-
-    // 1-2(地上)
-    if (sta == 1 && stb == 2 && stc == 2) {
-
-        //マリ　地上　入れ
-        // Mix_HaltMusic();
-        bgmchange(otom[1]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
-
-        scrollx = 900 * 100;
-        ma = 7500;
-        mb = 3000 * 9;
-
-        byte stagedatex[17][1001] = {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0},
-            {0, 0, 40, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 41, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81},
-            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-             5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5,
-             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5},
-            {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-             6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6,
-             6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-        /*
-        //毒1
-        tyobi(13*29,8*29-12,114);
-
-        //t=28;
-        sco=0;
-        t=sco;sa[t]=14*29*100+500;sb[t]=(9*29-12)*100;sc[t]=6000;sd[t]=12000-200;stype[t]=50;sxtype[t]=1;sco++;
-        t=sco;sa[t]=12*29*100;sb[t]=(11*29-12)*100;sc[t]=3000;sd[t]=6000-200;stype[t]=40;sxtype[t]=0;sco++;
-        t=sco;sa[t]=14*29*100+1000;sb[t]=-6000;sc[t]=5000;sd[t]=70000;stype[t]=100;sxtype[t]=1;sco++;
-        */
-
-        t = sco;
-        sa[t] = 5 * 29 * 100 + 500;
-        sb[t] = -6000;
-        sc[t] = 3000;
-        sd[t] = 70000;
-        stype[t] = 102;
-        sxtype[t] = 8;
-        sco++;
-        //空飛ぶ土管
-        t = 28;
-        sa[t] = 44 * 29 * 100 + 500;
-        sb[t] = (10 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 9000 - 200;
-        stype[t] = 50;
-        sco++;
-
-        //ポールもどき
-        bco = 0;
-        t = bco;
-        ba[t] = 19 * 29 * 100;
-        bb[t] = (2 * 29 - 12) * 100;
-        btype[t] = 85;
-        bxtype[t] = 0;
-        bco++;
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-
-    } // sta2
-
-    //必要BGM+SE
-
-    // 1-3(地上)
-    if (sta == 1 && stb == 3 && stc == 6) {
-        stc = 0;
-    }
-    if (sta == 1 && stb == 3 && stc == 0) {
-
-        // Mix_HaltMusic();
-        bgmchange(otom[1]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
-
-        scrollx = 3900 * 100;
-        // ma=3000;mb=3000;
-
-        byte stagedatex[17][1001] = {
-            //                                                                                                                                                                                     中間
-            {0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 0, 0, 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 84, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 0, 0, 0, 84, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,  0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 54, 0, 0,  0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0,  0, 0, 0, 0, 84, 0,  0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 51, 0, 0,  0, 84, 0, 0, 0, 0, 0,  99, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0,
-             0,  0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 0, 0,
-             97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0,  0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0,  0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0,  97, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 97, 0,
-             0, 0, 0, 0, 0, 1, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 85, 85, 0, 0, 0, 0, 0, 0, 0, 97, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 81, 0, 0, 0, 0, 0, 0,  0, 0, 0, 81, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81,
-             0, 0, 0, 0, 1, 1,  0, 0, 0, 0, 0, 81, 0, 0, 0, 0,  50, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4,  4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0, 0, 0,  0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5,
-             5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0},
-            {
-                6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6,
-                6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            },
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-        tco = 0;
-        tyobi(22 * 29, 3 * 29 - 12, 1);
-        //毒1
-        tyobi(54 * 29, 9 * 29 - 12, 116);
-        //音符+
-        tyobi(18 * 29, 14 * 29 - 12, 117);
-        tyobi(19 * 29, 14 * 29 - 12, 117);
-        tyobi(20 * 29, 14 * 29 - 12, 117);
-        txtype[tco] = 1;
-        tyobi(61 * 29, 9 * 29 - 12, 101); // 5
-        tyobi(74 * 29, 9 * 29 - 12, 7);   // 6
-
-        //ヒント2
-        txtype[tco] = 2;
-        tyobi(28 * 29, 9 * 29 - 12, 300); // 7
-        //ファイア
-        txtype[tco] = 3;
-        tyobi(7 * 29, 9 * 29 - 12, 101);
-        //ヒント3
-        txtype[tco] = 4;
-        tyobi(70 * 29, 8 * 29 - 12, 300); // 9
-
-        //もろいぶろっく×３
-        txtype[tco] = 1;
-        tyobi(58 * 29, 13 * 29 - 12, 115);
-        txtype[tco] = 1;
-        tyobi(59 * 29, 13 * 29 - 12, 115);
-        txtype[tco] = 1;
-        tyobi(60 * 29, 13 * 29 - 12, 115);
-
-        //ヒントブレイク
-        txtype[tco] = 0;
-        tyobi(111 * 29, 6 * 29 - 12, 301);
-        //ジャンプ
-        txtype[tco] = 0;
-        tyobi(114 * 29, 9 * 29 - 12, 120);
-
-        //ファイア
-        // tyobi(7*29,9*29-12,101);
-
-        bco = 0;
-        t = bco;
-        ba[t] = 101 * 29 * 100;
-        bb[t] = (5 * 29 - 12) * 100;
-        btype[t] = 4;
-        bxtype[t] = 1;
-        bco++;
-        t = bco;
-        ba[t] = 146 * 29 * 100;
-        bb[t] = (10 * 29 - 12) * 100;
-        btype[t] = 6;
-        bxtype[t] = 1;
-        bco++;
-
-        t = sco;
-        sa[t] = 9 * 29 * 100;
-        sb[t] = (13 * 29 - 12) * 100;
-        sc[t] = 9000 - 1;
-        sd[t] = 3000;
-        stype[t] = 52;
-        sco++;
-        // t=sco;sa[t]=58*29*100;sb[t]=(13*29-12)*100;sc[t]=9000-1;sd[t]=3000;stype[t]=52;sco++;
-
-        //土管
-        t = sco;
-        sa[t] = 65 * 29 * 100 + 500;
-        sb[t] = (10 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 9000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 1;
-        sco++;
-        // t=28;sa[t]=65*29*100;sb[t]=(10*29-12)*100;sc[t]=6000;sd[t]=9000-200;stype[t]=50;sco++;
-
-        //トラップ
-        t = sco;
-        sa[t] = 74 * 29 * 100;
-        sb[t] = (8 * 29 - 12) * 100 - 1500;
-        sc[t] = 6000;
-        sd[t] = 3000;
-        stype[t] = 103;
-        sxtype[t] = 1;
-        sco++;
-        t = sco;
-        sa[t] = 96 * 29 * 100 - 3000;
-        sb[t] = -6000;
-        sc[t] = 9000;
-        sd[t] = 70000;
-        stype[t] = 102;
-        sxtype[t] = 10;
-        sco++;
-        //ポール砲
-        t = sco;
-        sa[t] = 131 * 29 * 100 - 1500;
-        sb[t] = (1 * 29 - 12) * 100 - 3000;
-        sc[t] = 15000;
-        sd[t] = 14000;
-        stype[t] = 104;
-        sco++;
-
-        //？ボール
-        t = bco;
-        ba[t] = 10 * 29 * 100 + 100;
-        bb[t] = (11 * 29 - 12) * 100;
-        btype[t] = 105;
-        bxtype[t] = 1;
-        bco++;
-        //ブロックもどき
-        t = bco;
-        ba[t] = 43 * 29 * 100;
-        bb[t] = (11 * 29 - 12) * 100;
-        btype[t] = 82;
-        bxtype[t] = 1;
-        bco++;
-        // t=bco;ba[t]=146*29*100;bb[t]=(12*29-12)*100;btype[t]=82;bxtype[t]=1;bco++;
-        //うめぇ
-        t = bco;
-        ba[t] = 1 * 29 * 100;
-        bb[t] = (2 * 29 - 12 + 10) * 100 - 1000;
-        btype[t] = 80;
-        bxtype[t] = 0;
-        bco++;
-
-        //リフト
-        srco = 0;
-        t = srco;
-        sra[t] = 33 * 29 * 100;
-        srb[t] = (3 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 0;
-        sre[t] = 0;
-        srsp[t] = 1;
-        srco++;
-        t = srco;
-        sra[t] = 39 * 29 * 100 - 2000;
-        srb[t] = (6 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 1;
-        sre[t] = 0;
-        srco++;
-        t = srco;
-        sra[t] = 45 * 29 * 100 + 1500;
-        srb[t] = (10 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 0;
-        sre[t] = 0;
-        srsp[t] = 2;
-        srco++;
-
-        t = srco;
-        sra[t] = 95 * 29 * 100;
-        srb[t] = (7 * 29 - 12) * 100;
-        src[t] = 180 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 0;
-        sre[t] = 0;
-        srsp[t] = 10;
-        srco++;
-        t = srco;
-        sra[t] = 104 * 29 * 100;
-        srb[t] = (9 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 0;
-        sre[t] = 0;
-        srsp[t] = 12;
-        srco++;
-        t = srco;
-        sra[t] = 117 * 29 * 100;
-        srb[t] = (3 * 29 - 12) * 100;
-        src[t] = 90 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 1;
-        sre[t] = 0;
-        srsp[t] = 15;
-        srco++;
-        t = srco;
-        sra[t] = 124 * 29 * 100;
-        srb[t] = (5 * 29 - 12) * 100;
-        src[t] = 210 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 0;
-        sre[t] = 0;
-        srsp[t] = 10;
-        srco++;
-
-        if (stagepoint == 1) {
-            stagepoint = 0;
-            ma = 4500;
-            mb = -3000;
-            tyuukan = 0;
-        }
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-
-    } // sta3
-
-    // 1-3(地下)
-    if (sta == 1 && stb == 3 && stc == 1) {
-
-        //マリ　地上　入れ
-        // Mix_HaltMusic();
-        bgmchange(otom[2]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
-
-        scrollx = 0 * 100;
-        ma = 6000;
-        mb = 6000;
-        stagecolor = 2;
-
-        byte stagedatex[17][1001] = {
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                1,
-                0,
-                0,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-                1,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-            },
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-            },
-            {
-                1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-            },
-            {
-                1,
-                54,
-                0,
-                54,
-                0,
-                54,
-                0,
-                54,
-                0,
-                54,
-                0,
-                54,
-                0,
-                54,
-                0,
-                54,
-                1,
-                0,
-            },
-            {
-                5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 8, 8, 8, 8,
-            },
-            {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-        tco = 0;
-        // tyobi(15*29,12*29-12,111);
-
-        stc = 0;
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-
-    } // sta3
-
-    // 1-3(空中)
-    if (sta == 1 && stb == 3 && stc == 5) {
-
-        stagecolor = 3;
-        bgmchange(otom[3]);
-
-        scrollx = 0 * 100;
-        ma = 3000;
-        mb = 33000;
-
-        stagepoint = 1;
-
-        byte stagedatex[17][1001] = {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {0, 0, 9, 0, 9, 0, 9, 0, 9, 0, 9, 0, 0, 0, 0, 0, 0},
-            {
-                0,
-                0,
-                0,
-                9,
-                0,
-                9,
-                0,
-                9,
-                0,
-                9,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                9,
-                0,
-                9,
-                0,
-                9,
-                0,
-                9,
-                0,
-                9,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            },
-            {
-                8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 8, 8, 8, 8, 8,
-            },
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-        sco = 0;
-        t = sco;
-        sa[t] = 14 * 29 * 100 - 5;
-        sb[t] = (11 * 29 - 12) * 100;
-        sc[t] = 6000;
-        sd[t] = 15000 - 200;
-        stype[t] = 50;
-        sxtype[t] = 1;
-        sco++;
-        // t=sco;sa[t]=12*29*100;sb[t]=(11*29-12)*100;sc[t]=3000;sd[t]=6000-200;stype[t]=40;sxtype[t]=0;sco++;
-        // t=sco;sa[t]=14*29*100+1000;sb[t]=-6000;sc[t]=5000;sd[t]=70000;stype[t]=100;sxtype[t]=1;sco++;
-
-        txtype[tco] = 0;
-        tyobi(12 * 29, 4 * 29 - 12, 112);
-        //ヒント3
-        txtype[tco] = 3;
-        tyobi(12 * 29, 8 * 29 - 12, 300);
-        // txtype[tco]=0;tyobi(13*29,4*29-12,110);
-
-        // stc=0;
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-
-    } // sta5
-
-    // 1-4(地下)
-    if (sta == 1 && stb == 4 && stc == 0) {
-
-        //マリ　地上　入れ
-        // Mix_HaltMusic();
-        bgmchange(otom[4]);
-        // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
-
-        scrollx = 4400 * 100;
-        ma = 12000;
-        mb = 6000;
-        stagecolor = 4;
-
-        byte stagedatex[17][1001] = {
-            //                                                                                                                                                                                     中間
-            {5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5,
-             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-             7, 7, 7, 7, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
-            {0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 5, 0,  0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0,  0, 5, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
-            {0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 5,
-             0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0,
-             0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,
-             0, 0, 0, 0,  0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
-             0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 5, 0, 0, 5,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0,  0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 5, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 5,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 5, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-             5, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5,
-             0, 0, 0, 3, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 7, 7, 2, 2, 7, 5, 5, 5, 5, 0, 0, 0, 3, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-             5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5,
-             0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5,  5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-             5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5,
-             0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-             5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0,  0, 5, 5,  5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 5, 5, 5, 5,
-             0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 59, 0, 0, 0,  0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0,  0, 0, 0, 0, 5,
-             5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0,  0, 0, 0,  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
-             5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 40, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0,  0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5,  5, 5, 5, 5,
-             5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5,  5, 5, 0, 0,
-             0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 41, 0, 5, 5, 5,
-             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0},
-            {0, 0, 0,  0, 0, 0,  0, 5, 5, 5, 86, 0,  0, 86, 0,  5, 5, 5, 5, 5, 86, 0, 0, 86, 0, 0,  86, 0, 0,  86, 0, 0, 86, 0, 0,  86, 0, 0,  86, 0, 5, 5,  5, 5, 5,
-             5, 5, 5,  5, 5, 5,  5, 5, 5, 5, 5,  86, 0, 0,  86, 5, 5, 5, 5, 5, 5,  5, 5, 5,  5, 5,  5,  5, 86, 5,  5, 5, 5,  5, 86, 0,  0, 86, 0,  0, 5, 5,  5, 5, 5,
-             5, 5, 86, 0, 0, 86, 5, 5, 5, 5, 86, 0,  0, 86, 0,  5, 5, 5, 5, 5, 5,  5, 5, 5,  5, 86, 0,  5, 5,  86, 0, 0, 86, 0, 0,  86, 0, 0,  86, 0, 0, 86, 5, 5, 5,
-             5, 5, 5,  5, 5, 5,  5, 5, 5, 5, 5,  5,  5, 41, 0,  5, 5, 5, 5, 5, 5,  5, 5, 5,  5, 5,  5,  5, 5,  5,  5, 5, 5,  5, 5,  5,  0, 0,  0,  0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-        sco = 0; // sco=140;
-        t = sco;
-        sa[t] = 35 * 29 * 100 - 1500 + 750;
-        sb[t] = (8 * 29 - 12) * 100 - 1500;
-        sc[t] = 1500;
-        sd[t] = 3000;
-        stype[t] = 105;
-        sco++;
-        t = sco;
-        sa[t] = 67 * 29 * 100;
-        sb[t] = (4 * 29 - 12) * 100;
-        sc[t] = 9000 - 1;
-        sd[t] = 3000 * 1 - 1;
-        stype[t] = 51;
-        sxtype[t] = 3;
-        sgtype[t] = 0;
-        sco++;
-        t = sco;
-        sa[t] = 73 * 29 * 100;
-        sb[t] = (13 * 29 - 12) * 100;
-        sc[t] = 3000 * 1 - 1;
-        sd[t] = 3000;
-        stype[t] = 52;
-        sco++;
-        // t=sco;sa[t]=79*29*100;sb[t]=(13*29-12)*100;sc[t]=30*3*100-1;sd[t]=6000-200;stype[t]=51;sxtype[t]=4;sco++;
-        // t=sco;sa[t]=83*29*100;sb[t]=(-2*29-12)*100;sc[t]=30*5*100-1;sd[t]=3000-200;stype[t]=51;sxtype[t]=4;sco++;
-        t = sco;
-        sa[t] = 123 * 29 * 100;
-        sb[t] = (1 * 29 - 12) * 100;
-        sc[t] = 30 * 6 * 100 - 1 + 0;
-        sd[t] = 3000 - 200;
-        stype[t] = 51;
-        sxtype[t] = 10;
-        sco++;
-        //スクロール消し
-        t = sco;
-        sa[t] = 124 * 29 * 100 + 3000;
-        sb[t] = (2 * 29 - 12) * 100;
-        sc[t] = 3000 * 1 - 1;
-        sd[t] = 300000;
-        stype[t] = 102;
-        sxtype[t] = 20;
-        sco++;
-        t = sco;
-        sa[t] = 148 * 29 * 100 + 1000;
-        sb[t] = (-12 * 29 - 12) * 100;
-        sc[t] = 3000 * 1 - 1;
-        sd[t] = 300000;
-        stype[t] = 102;
-        sxtype[t] = 30;
-        sco++;
-
-        // 3連星
-        t = sco;
-        sa[t] = 100 * 29 * 100 + 1000;
-        sb[t] = -6000;
-        sc[t] = 3000;
-        sd[t] = 70000;
-        stype[t] = 102;
-        sxtype[t] = 12;
-        sco++;
-
-        //地面1
-        t = sco;
-        sa[t] = 0 * 29 * 100 - 0;
-        sb[t] = 9 * 29 * 100 + 1700;
-        sc[t] = 3000 * 7 - 1;
-        sd[t] = 3000 * 5 - 1;
-        stype[t] = 200;
-        sxtype[t] = 0;
-        sco++;
-        t = sco;
-        sa[t] = 11 * 29 * 100;
-        sb[t] = -1 * 29 * 100 + 1700;
-        sc[t] = 3000 * 8 - 1;
-        sd[t] = 3000 * 4 - 1;
-        stype[t] = 200;
-        sxtype[t] = 0;
-        sco++;
-
-        bco = 0;
-        t = bco;
-        ba[t] = 8 * 29 * 100 - 1400;
-        bb[t] = (2 * 29 - 12) * 100 + 500;
-        btype[t] = 86;
-        bxtype[t] = 0;
-        bco++;
-        t = bco;
-        ba[t] = 42 * 29 * 100 - 1400;
-        bb[t] = (-2 * 29 - 12) * 100 + 500;
-        btype[t] = 86;
-        bxtype[t] = 0;
-        bco++;
-        t = bco;
-        ba[t] = 29 * 29 * 100 + 1500;
-        bb[t] = (7 * 29 - 12) * 100 + 1500;
-        btype[t] = 87;
-        bxtype[t] = 105;
-        bco++;
-        t = bco;
-        ba[t] = 47 * 29 * 100 + 1500;
-        bb[t] = (9 * 29 - 12) * 100 + 1500;
-        btype[t] = 87;
-        bxtype[t] = 110;
-        bco++;
-        t = bco;
-        ba[t] = 70 * 29 * 100 + 1500;
-        bb[t] = (9 * 29 - 12) * 100 + 1500;
-        btype[t] = 87;
-        bxtype[t] = 105;
-        bco++;
-        t = bco;
-        ba[t] = 66 * 29 * 100 + 1501;
-        bb[t] = (4 * 29 - 12) * 100 + 1500;
-        btype[t] = 87;
-        bxtype[t] = 101;
-        bco++;
-        t = bco;
-        ba[t] = 85 * 29 * 100 + 1501;
-        bb[t] = (4 * 29 - 12) * 100 + 1500;
-        btype[t] = 87;
-        bxtype[t] = 105;
-        bco++;
-
-        //ステルスうめぇ
-        t = bco;
-        ba[t] = 57 * 29 * 100;
-        bb[t] = (2 * 29 - 12 + 10) * 100 - 500;
-        btype[t] = 80;
-        bxtype[t] = 1;
-        bco++;
-        //ブロックもどき
-        t = bco;
-        ba[t] = 77 * 29 * 100;
-        bb[t] = (5 * 29 - 12) * 100;
-        btype[t] = 82;
-        bxtype[t] = 2;
-        bco++;
-        //ボス
-        t = bco;
-        ba[t] = 130 * 29 * 100;
-        bb[t] = (8 * 29 - 12) * 100;
-        btype[t] = 30;
-        bxtype[t] = 0;
-        bco++;
-        //クックル
-        t = bco;
-        ba[t] = 142 * 29 * 100;
-        bb[t] = (10 * 29 - 12) * 100;
-        btype[t] = 31;
-        bxtype[t] = 0;
-        bco++;
-
-        //マグマ
-        nco = 0;
-        na[nco] = 7 * 29 * 100 - 300;
-        nb[nco] = 14 * 29 * 100 - 1200;
-        ntype[nco] = 6;
-        nco++;
-        if (nco >= nmax)
+            if (stc == 0) {
+
+                // Mix_HaltMusic();
+                bgmchange(otom[1]);
+                // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+
+                scrollx = 3900 * 100;
+                // ma=3000;mb=3000;
+
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+
+                tco = 0;
+                tyobi(22 * 29, 3 * 29 - 12, 1);
+                //毒1
+                tyobi(54 * 29, 9 * 29 - 12, 116);
+                //音符+
+                tyobi(18 * 29, 14 * 29 - 12, 117);
+                tyobi(19 * 29, 14 * 29 - 12, 117);
+                tyobi(20 * 29, 14 * 29 - 12, 117);
+                txtype[tco] = 1;
+                tyobi(61 * 29, 9 * 29 - 12, 101); // 5
+                tyobi(74 * 29, 9 * 29 - 12, 7);   // 6
+
+                //ヒント2
+                txtype[tco] = 2;
+                tyobi(28 * 29, 9 * 29 - 12, 300); // 7
+                //ファイア
+                txtype[tco] = 3;
+                tyobi(7 * 29, 9 * 29 - 12, 101);
+                //ヒント3
+                txtype[tco] = 4;
+                tyobi(70 * 29, 8 * 29 - 12, 300); // 9
+
+                //もろいぶろっく×３
+                txtype[tco] = 1;
+                tyobi(58 * 29, 13 * 29 - 12, 115);
+                txtype[tco] = 1;
+                tyobi(59 * 29, 13 * 29 - 12, 115);
+                txtype[tco] = 1;
+                tyobi(60 * 29, 13 * 29 - 12, 115);
+
+                //ヒントブレイク
+                txtype[tco] = 0;
+                tyobi(111 * 29, 6 * 29 - 12, 301);
+                //ジャンプ
+                txtype[tco] = 0;
+                tyobi(114 * 29, 9 * 29 - 12, 120);
+
+                //ファイア
+                // tyobi(7*29,9*29-12,101);
+
+                bco = 0;
+                t = bco;
+                ba[t] = 101 * 29 * 100;
+                bb[t] = (5 * 29 - 12) * 100;
+                btype[t] = 4;
+                bxtype[t] = 1;
+                bco++;
+                t = bco;
+                ba[t] = 146 * 29 * 100;
+                bb[t] = (10 * 29 - 12) * 100;
+                btype[t] = 6;
+                bxtype[t] = 1;
+                bco++;
+
+                t = sco;
+                sa[t] = 9 * 29 * 100;
+                sb[t] = (13 * 29 - 12) * 100;
+                sc[t] = 9000 - 1;
+                sd[t] = 3000;
+                stype[t] = 52;
+                sco++;
+                // t=sco;sa[t]=58*29*100;sb[t]=(13*29-12)*100;sc[t]=9000-1;sd[t]=3000;stype[t]=52;sco++;
+
+                //土管
+                t = sco;
+                sa[t] = 65 * 29 * 100 + 500;
+                sb[t] = (10 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 9000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 1;
+                sco++;
+                // t=28;sa[t]=65*29*100;sb[t]=(10*29-12)*100;sc[t]=6000;sd[t]=9000-200;stype[t]=50;sco++;
+
+                //トラップ
+                t = sco;
+                sa[t] = 74 * 29 * 100;
+                sb[t] = (8 * 29 - 12) * 100 - 1500;
+                sc[t] = 6000;
+                sd[t] = 3000;
+                stype[t] = 103;
+                sxtype[t] = 1;
+                sco++;
+                t = sco;
+                sa[t] = 96 * 29 * 100 - 3000;
+                sb[t] = -6000;
+                sc[t] = 9000;
+                sd[t] = 70000;
+                stype[t] = 102;
+                sxtype[t] = 10;
+                sco++;
+                //ポール砲
+                t = sco;
+                sa[t] = 131 * 29 * 100 - 1500;
+                sb[t] = (1 * 29 - 12) * 100 - 3000;
+                sc[t] = 15000;
+                sd[t] = 14000;
+                stype[t] = 104;
+                sco++;
+
+                //？ボール
+                t = bco;
+                ba[t] = 10 * 29 * 100 + 100;
+                bb[t] = (11 * 29 - 12) * 100;
+                btype[t] = 105;
+                bxtype[t] = 1;
+                bco++;
+                //ブロックもどき
+                t = bco;
+                ba[t] = 43 * 29 * 100;
+                bb[t] = (11 * 29 - 12) * 100;
+                btype[t] = 82;
+                bxtype[t] = 1;
+                bco++;
+                // t=bco;ba[t]=146*29*100;bb[t]=(12*29-12)*100;btype[t]=82;bxtype[t]=1;bco++;
+                //うめぇ
+                t = bco;
+                ba[t] = 1 * 29 * 100;
+                bb[t] = (2 * 29 - 12 + 10) * 100 - 1000;
+                btype[t] = 80;
+                bxtype[t] = 0;
+                bco++;
+
+                //リフト
+                srco = 0;
+                t = srco;
+                sra[t] = 33 * 29 * 100;
+                srb[t] = (3 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 0;
+                sre[t] = 0;
+                srsp[t] = 1;
+                srco++;
+                t = srco;
+                sra[t] = 39 * 29 * 100 - 2000;
+                srb[t] = (6 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 1;
+                sre[t] = 0;
+                srco++;
+                t = srco;
+                sra[t] = 45 * 29 * 100 + 1500;
+                srb[t] = (10 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 0;
+                sre[t] = 0;
+                srsp[t] = 2;
+                srco++;
+
+                t = srco;
+                sra[t] = 95 * 29 * 100;
+                srb[t] = (7 * 29 - 12) * 100;
+                src[t] = 180 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 0;
+                sre[t] = 0;
+                srsp[t] = 10;
+                srco++;
+                t = srco;
+                sra[t] = 104 * 29 * 100;
+                srb[t] = (9 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 0;
+                sre[t] = 0;
+                srsp[t] = 12;
+                srco++;
+                t = srco;
+                sra[t] = 117 * 29 * 100;
+                srb[t] = (3 * 29 - 12) * 100;
+                src[t] = 90 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 1;
+                sre[t] = 0;
+                srsp[t] = 15;
+                srco++;
+                t = srco;
+                sra[t] = 124 * 29 * 100;
+                srb[t] = (5 * 29 - 12) * 100;
+                src[t] = 210 * 100;
+                srtype[t] = 0;
+                sracttype[t] = 0;
+                sre[t] = 0;
+                srsp[t] = 10;
+                srco++;
+
+                if (stagepoint == 1) {
+                    stagepoint = 0;
+                    ma = 4500;
+                    mb = -3000;
+                    tyuukan = 0;
+                }
+
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+
+            } // sta3
+
+            // 1-3(地下)
+            else if (stc == 1) {
+
+                //マリ　地上　入れ
+                // Mix_HaltMusic();
+                bgmchange(otom[2]);
+                // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+
+                scrollx = 0 * 100;
+                ma = 6000;
+                mb = 6000;
+                stagecolor = 2;
+
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+                tco = 0;
+                // tyobi(15*29,12*29-12,111);
+
+                stc = 0;
+
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+
+            } // sta3
+
+            // 1-3(空中)
+            else if (stc == 5) {
+
+                stagecolor = 3;
+                bgmchange(otom[3]);
+
+                scrollx = 0 * 100;
+                ma = 3000;
+                mb = 33000;
+
+                stagepoint = 1;
+
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+                sco = 0;
+                t = sco;
+                sa[t] = 14 * 29 * 100 - 5;
+                sb[t] = (11 * 29 - 12) * 100;
+                sc[t] = 6000;
+                sd[t] = 15000 - 200;
+                stype[t] = 50;
+                sxtype[t] = 1;
+                sco++;
+                // t=sco;sa[t]=12*29*100;sb[t]=(11*29-12)*100;sc[t]=3000;sd[t]=6000-200;stype[t]=40;sxtype[t]=0;sco++;
+                // t=sco;sa[t]=14*29*100+1000;sb[t]=-6000;sc[t]=5000;sd[t]=70000;stype[t]=100;sxtype[t]=1;sco++;
+
+                txtype[tco] = 0;
+                tyobi(12 * 29, 4 * 29 - 12, 112);
+                //ヒント3
+                txtype[tco] = 3;
+                tyobi(12 * 29, 8 * 29 - 12, 300);
+                // txtype[tco]=0;tyobi(13*29,4*29-12,110);
+
+                // stc=0;
+
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+
+            } // sta5
+              // 1-4(地下)
+        } else if (stb == 4 && stc == 0) {
+
+            //マリ　地上　入れ
+            // Mix_HaltMusic();
+            bgmchange(otom[4]);
+            // PlaySoundMem(oto[0],DX_PLAYTYPE_LOOP) ;
+
+            scrollx = 4400 * 100;
+            ma = 12000;
+            mb = 6000;
+            stagecolor = 4;
+
+            byte stagedatex[17][1001] = {
+                //                                                                                                                                                                                     中間
+                {5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+                 7, 7, 7, 7, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
+                {0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 5, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 5, 0, 0,
+                 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,  0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0,
+                 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
+                 5, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 3, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 7, 7, 2, 2, 7, 5, 5, 5, 5, 0, 0, 0, 3, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0,
+                 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0,
+                 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0,
+                 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 59, 0, 0, 0, 0,  0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0,
+                 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 40, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0,  0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5,
+                 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 0, 0,  0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5,
+                 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 41, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0,  0,  0, 0, 0,  0, 0, 5,  5, 5, 86, 0, 0, 86, 0,  5, 5, 5, 5, 5, 86, 0, 0, 86, 0, 0, 86, 0, 0, 86, 0,  0, 86, 0,  0, 86, 0,  0, 86, 0, 5, 5,  5, 5, 5,  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 86, 0, 0,
+                 86, 5,  5, 5, 5,  5, 5, 5,  5, 5, 5,  5, 5, 5,  86, 5, 5, 5, 5, 5, 86, 0, 0, 86, 0, 0, 5,  5, 5, 5,  5,  5, 5,  86, 0, 0,  86, 5, 5,  5, 5, 86, 0, 0, 86, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 86, 0, 5,
+                 5,  86, 0, 0, 86, 0, 0, 86, 0, 0, 86, 0, 0, 86, 5,  5, 5, 5, 5, 5, 5,  5, 5, 5,  5, 5, 5,  5, 5, 5,  41, 0, 5,  5,  5, 5,  5,  5, 5,  5, 5, 5,  5, 5, 5,  5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0,  0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+            sco = 0; // sco=140;
+            t = sco;
+            sa[t] = 35 * 29 * 100 - 1500 + 750;
+            sb[t] = (8 * 29 - 12) * 100 - 1500;
+            sc[t] = 1500;
+            sd[t] = 3000;
+            stype[t] = 105;
+            sco++;
+            t = sco;
+            sa[t] = 67 * 29 * 100;
+            sb[t] = (4 * 29 - 12) * 100;
+            sc[t] = 9000 - 1;
+            sd[t] = 3000 * 1 - 1;
+            stype[t] = 51;
+            sxtype[t] = 3;
+            sgtype[t] = 0;
+            sco++;
+            t = sco;
+            sa[t] = 73 * 29 * 100;
+            sb[t] = (13 * 29 - 12) * 100;
+            sc[t] = 3000 * 1 - 1;
+            sd[t] = 3000;
+            stype[t] = 52;
+            sco++;
+            // t=sco;sa[t]=79*29*100;sb[t]=(13*29-12)*100;sc[t]=30*3*100-1;sd[t]=6000-200;stype[t]=51;sxtype[t]=4;sco++;
+            // t=sco;sa[t]=83*29*100;sb[t]=(-2*29-12)*100;sc[t]=30*5*100-1;sd[t]=3000-200;stype[t]=51;sxtype[t]=4;sco++;
+            t = sco;
+            sa[t] = 123 * 29 * 100;
+            sb[t] = (1 * 29 - 12) * 100;
+            sc[t] = 30 * 6 * 100 - 1 + 0;
+            sd[t] = 3000 - 200;
+            stype[t] = 51;
+            sxtype[t] = 10;
+            sco++;
+            //スクロール消し
+            t = sco;
+            sa[t] = 124 * 29 * 100 + 3000;
+            sb[t] = (2 * 29 - 12) * 100;
+            sc[t] = 3000 * 1 - 1;
+            sd[t] = 300000;
+            stype[t] = 102;
+            sxtype[t] = 20;
+            sco++;
+            t = sco;
+            sa[t] = 148 * 29 * 100 + 1000;
+            sb[t] = (-12 * 29 - 12) * 100;
+            sc[t] = 3000 * 1 - 1;
+            sd[t] = 300000;
+            stype[t] = 102;
+            sxtype[t] = 30;
+            sco++;
+
+            // 3連星
+            t = sco;
+            sa[t] = 100 * 29 * 100 + 1000;
+            sb[t] = -6000;
+            sc[t] = 3000;
+            sd[t] = 70000;
+            stype[t] = 102;
+            sxtype[t] = 12;
+            sco++;
+
+            //地面1
+            t = sco;
+            sa[t] = 0 * 29 * 100 - 0;
+            sb[t] = 9 * 29 * 100 + 1700;
+            sc[t] = 3000 * 7 - 1;
+            sd[t] = 3000 * 5 - 1;
+            stype[t] = 200;
+            sxtype[t] = 0;
+            sco++;
+            t = sco;
+            sa[t] = 11 * 29 * 100;
+            sb[t] = -1 * 29 * 100 + 1700;
+            sc[t] = 3000 * 8 - 1;
+            sd[t] = 3000 * 4 - 1;
+            stype[t] = 200;
+            sxtype[t] = 0;
+            sco++;
+
+            bco = 0;
+            t = bco;
+            ba[t] = 8 * 29 * 100 - 1400;
+            bb[t] = (2 * 29 - 12) * 100 + 500;
+            btype[t] = 86;
+            bxtype[t] = 0;
+            bco++;
+            t = bco;
+            ba[t] = 42 * 29 * 100 - 1400;
+            bb[t] = (-2 * 29 - 12) * 100 + 500;
+            btype[t] = 86;
+            bxtype[t] = 0;
+            bco++;
+            t = bco;
+            ba[t] = 29 * 29 * 100 + 1500;
+            bb[t] = (7 * 29 - 12) * 100 + 1500;
+            btype[t] = 87;
+            bxtype[t] = 105;
+            bco++;
+            t = bco;
+            ba[t] = 47 * 29 * 100 + 1500;
+            bb[t] = (9 * 29 - 12) * 100 + 1500;
+            btype[t] = 87;
+            bxtype[t] = 110;
+            bco++;
+            t = bco;
+            ba[t] = 70 * 29 * 100 + 1500;
+            bb[t] = (9 * 29 - 12) * 100 + 1500;
+            btype[t] = 87;
+            bxtype[t] = 105;
+            bco++;
+            t = bco;
+            ba[t] = 66 * 29 * 100 + 1501;
+            bb[t] = (4 * 29 - 12) * 100 + 1500;
+            btype[t] = 87;
+            bxtype[t] = 101;
+            bco++;
+            t = bco;
+            ba[t] = 85 * 29 * 100 + 1501;
+            bb[t] = (4 * 29 - 12) * 100 + 1500;
+            btype[t] = 87;
+            bxtype[t] = 105;
+            bco++;
+
+            //ステルスうめぇ
+            t = bco;
+            ba[t] = 57 * 29 * 100;
+            bb[t] = (2 * 29 - 12 + 10) * 100 - 500;
+            btype[t] = 80;
+            bxtype[t] = 1;
+            bco++;
+            //ブロックもどき
+            t = bco;
+            ba[t] = 77 * 29 * 100;
+            bb[t] = (5 * 29 - 12) * 100;
+            btype[t] = 82;
+            bxtype[t] = 2;
+            bco++;
+            //ボス
+            t = bco;
+            ba[t] = 130 * 29 * 100;
+            bb[t] = (8 * 29 - 12) * 100;
+            btype[t] = 30;
+            bxtype[t] = 0;
+            bco++;
+            //クックル
+            t = bco;
+            ba[t] = 142 * 29 * 100;
+            bb[t] = (10 * 29 - 12) * 100;
+            btype[t] = 31;
+            bxtype[t] = 0;
+            bco++;
+
+            //マグマ
             nco = 0;
-        na[nco] = 41 * 29 * 100 - 300;
-        nb[nco] = 14 * 29 * 100 - 1200;
-        ntype[nco] = 6;
-        nco++;
-        if (nco >= nmax)
-            nco = 0;
-        na[nco] = 149 * 29 * 100 - 1100;
-        nb[nco] = 10 * 29 * 100 - 600;
-        ntype[nco] = 100;
-        nco++;
-        if (nco >= nmax)
-            nco = 0;
+            na[nco] = 7 * 29 * 100 - 300;
+            nb[nco] = 14 * 29 * 100 - 1200;
+            ntype[nco] = 6;
+            nco++;
+            if (nco >= nmax)
+                nco = 0;
+            na[nco] = 41 * 29 * 100 - 300;
+            nb[nco] = 14 * 29 * 100 - 1200;
+            ntype[nco] = 6;
+            nco++;
+            if (nco >= nmax)
+                nco = 0;
+            na[nco] = 149 * 29 * 100 - 1100;
+            nb[nco] = 10 * 29 * 100 - 600;
+            ntype[nco] = 100;
+            nco++;
+            if (nco >= nmax)
+                nco = 0;
 
-        tco = 0;
-        // ON-OFFブロック
-        txtype[tco] = 1;
-        tyobi(29 * 29, 3 * 29 - 12, 130);
-        // 1-2
-        tyobi(34 * 29, 9 * 29 - 12, 5);
-        tyobi(35 * 29, 9 * 29 - 12, 5);
-        //隠し
-        tyobi(55 * 29 + 15, 6 * 29 - 12, 7);
-        // tyobi(62*29,9*29-12,2);
-        //隠しON-OFF
-        txtype[tco] = 10;
-        tyobi(50 * 29, 9 * 29 - 12, 114);
-        //ヒント3
-        txtype[tco] = 5;
-        tyobi(1 * 29, 5 * 29 - 12, 300);
-        //ファイア
-        txtype[tco] = 3;
-        tyobi(86 * 29, 9 * 29 - 12, 101);
-        //キノコなし　普通
-        // txtype[tco]=2;tyobi(81*29,1*29-12,5);
-        //音符
-        txtype[tco] = 2;
-        tyobi(86 * 29, 6 * 29 - 12, 117);
-
-        //もろいぶろっく×３
-        for (t = 0; t <= 2; t++) {
+            tco = 0;
+            // ON-OFFブロック
+            txtype[tco] = 1;
+            tyobi(29 * 29, 3 * 29 - 12, 130);
+            // 1-2
+            tyobi(34 * 29, 9 * 29 - 12, 5);
+            tyobi(35 * 29, 9 * 29 - 12, 5);
+            //隠し
+            tyobi(55 * 29 + 15, 6 * 29 - 12, 7);
+            // tyobi(62*29,9*29-12,2);
+            //隠しON-OFF
+            txtype[tco] = 10;
+            tyobi(50 * 29, 9 * 29 - 12, 114);
+            //ヒント3
+            txtype[tco] = 5;
+            tyobi(1 * 29, 5 * 29 - 12, 300);
+            //ファイア
             txtype[tco] = 3;
-            tyobi((79 + t) * 29, 13 * 29 - 12, 115);
-        }
+            tyobi(86 * 29, 9 * 29 - 12, 101);
+            //キノコなし　普通
+            // txtype[tco]=2;tyobi(81*29,1*29-12,5);
+            //音符
+            txtype[tco] = 2;
+            tyobi(86 * 29, 6 * 29 - 12, 117);
 
-        //ジャンプ
-        txtype[tco] = 3;
-        tyobi(105 * 29, 11 * 29 - 12, 120);
-        //毒1
-        txtype[tco] = 3;
-        tyobi(109 * 29, 7 * 29 - 12, 102);
-        //デフラグ
-        txtype[tco] = 4;
-        tyobi(111 * 29, 7 * 29 - 12, 101);
-        //剣
-        tyobi(132 * 29, 8 * 29 - 12 - 3, 140);
-        tyobi(131 * 29, 9 * 29 - 12, 141);
-        //メロン
-        tyobi(161 * 29, 12 * 29 - 12, 142);
-        //ファイアバー強化
-        tyobi(66 * 29, 4 * 29 - 12, 124);
-
-        //リフト
-        srco = 0;
-        t = srco;
-        sra[t] = 93 * 29 * 100;
-        srb[t] = (10 * 29 - 12) * 100;
-        src[t] = 60 * 100;
-        srtype[t] = 0;
-        sracttype[t] = 1;
-        sre[t] = 0;
-        srco++;
-        t = 20;
-        sra[t] = 119 * 29 * 100 + 300;
-        srb[t] = (10 * 29 - 12) * 100;
-        src[t] = 12 * 30 * 100 + 1000;
-        srtype[t] = 0;
-        sracttype[t] = 0;
-        srsp[t] = 21;
-        sre[t] = 0;
-        srco++;
-
-        stc = 0;
-
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
+            //もろいぶろっく×３
+            for (t = 0; t <= 2; t++) {
+                txtype[tco] = 3;
+                tyobi((79 + t) * 29, 13 * 29 - 12, 115);
             }
-        }
 
-    } // sta4
+            //ジャンプ
+            txtype[tco] = 3;
+            tyobi(105 * 29, 11 * 29 - 12, 120);
+            //毒1
+            txtype[tco] = 3;
+            tyobi(109 * 29, 7 * 29 - 12, 102);
+            //デフラグ
+            txtype[tco] = 4;
+            tyobi(111 * 29, 7 * 29 - 12, 101);
+            //剣
+            tyobi(132 * 29, 8 * 29 - 12 - 3, 140);
+            tyobi(131 * 29, 9 * 29 - 12, 141);
+            //メロン
+            tyobi(161 * 29, 12 * 29 - 12, 142);
+            //ファイアバー強化
+            tyobi(66 * 29, 4 * 29 - 12, 124);
 
-    if (sta == 2 && stb == 1 && stc == 0) { // 2-1
-        ma = 5600;
-        mb = 32000;
-        bgmchange(otom[1]);
-        stagecolor = 1;
-        scrollx = 2900 * (113 - 19);
-        //
-        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 4, 4, 0,
-                                      0, 4, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0,  0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 4, 4, 4, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0,  0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,
-                                      4, 0, 0, 0, 0, 4, 4, 4, 4, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 4, 4, 4,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4,  0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-                                      0, 0, 7, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 4, 4, 4, 4, 4, 0, 0, 4, 7, 7, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 2, 2, 98, 2, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 4, 4,  0,  0,  0,  0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 0, 0, 10, 10, 10, 10, 4, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4,  4,  4,  4,  0, 0, 0,  0,  0,  0,  0, 7, 0, 4, 4, 4, 4, 4, 4, 4, 4},
-                                     {0, 0, 0,  0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0,  0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 4, 7, 7, 7, 4, 4, 4, 0, 0,  0, 0, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4,  4, 4, 4,  4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0,  0, 0, 81, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,  0, 81, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0,  0, 0, 0,  0, 0, 81, 0, 0, 0, 81, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 50, 0, 0,  50, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 81, 0, 0, 0,  0, 0, 0,  4, 0, 0, 4,  4, 4, 4, 4, 4, 4, 4, 0, 0,  0, 0, 0,  0, 0,  0,  4,  0, 0, 0, 0, 0, 0, 0, 0},
+            //リフト
+            srco = 0;
+            t = srco;
+            sra[t] = 93 * 29 * 100;
+            srb[t] = (10 * 29 - 12) * 100;
+            src[t] = 60 * 100;
+            srtype[t] = 0;
+            sracttype[t] = 1;
+            sre[t] = 0;
+            srco++;
+            t = 20;
+            sra[t] = 119 * 29 * 100 + 300;
+            srb[t] = (10 * 29 - 12) * 100;
+            src[t] = 12 * 30 * 100 + 1000;
+            srtype[t] = 0;
+            sracttype[t] = 0;
+            srsp[t] = 21;
+            sre[t] = 0;
+            srco++;
 
-                                     {5, 5, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5,
-                                      5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-                                      5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5},
-                                     {6, 6, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 6, 6, 6, 6,
-                                      6, 6, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-                                      6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 6, 6, 6},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //追加情報
-        tco = 0;
-        //
-        txtype[tco] = 6;
-        tyobi(1 * 29, 9 * 29 - 12, 300);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(40 * 29, 9 * 29 - 12, 110);
-        tco += 1;
-        //
-        txtype[tco] = 7;
-        tyobi(79 * 29, 7 * 29 - 12, 300);
-        tco += 1;
-        //
-        txtype[tco] = 2;
-        tyobi(83 * 29, 7 * 29 - 12, 102);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(83 * 29, 2 * 29 - 12, 114);
-        tco += 1;
-        //
-        for (int i = -1; i > -7; i -= 1) {
-            tyobi(85 * 29, i * 29 - 12, 4);
-            tco += 1;
-        }
-        //
-        sco = 0;
-        sa[sco] = 30 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 12000 - 1;
-        sd[sco] = 3000;
-        stype[sco] = 52;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 51 * 29 * 100;
-        sb[sco] = (4 * 29 - 12) * 100;
-        sc[sco] = 9000 - 1;
-        sd[sco] = 3000;
-        stype[sco] = 51;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 84 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 9000 - 1;
-        sd[sco] = 3000;
-        stype[sco] = 52;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 105 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 15000 - 1;
-        sd[sco] = 3000;
-        stype[sco] = 52;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        bco = 0;
-        //
-        ba[bco] = 6 * 29 * 100;
-        bb[bco] = (3 * 29 - 12) * 100;
-        btype[bco] = 80;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 13 * 29 * 100;
-        bb[bco] = (6 * 29 - 12) * 100;
-        btype[bco] = 4;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 23 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 80;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 25 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 80;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 27 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 80;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 88 * 29 * 100;
-        bb[bco] = (12 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-    }
-
-    if (sta == 2 && stb == 2 && stc == 0) { // 2-2(地上)
-        bgmchange(otom[1]);
-        stagecolor = 1;
-        scrollx = 2900 * (19 - 19);
-        //
-        byte stagedatex[17][1001] = {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0}, {0, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5},  {6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //
-        sa[sco] = 14 * 29 * 100 + 200;
-        sb[sco] = -6000;
-        sc[sco] = 5000;
-        sd[sco] = 70000;
-        stype[sco] = 100;
-        sco += 1;
-        //
-        sa[sco] = 12 * 29 * 100 + 1200;
-        sb[sco] = -6000;
-        sc[sco] = 7000;
-        sd[sco] = 70000;
-        stype[sco] = 101;
-        sco += 1;
-        //
-        sa[sco] = 12 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 6000 - 1;
-        sd[sco] = 3000;
-        stype[sco] = 52;
-        sgtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 14 * 29 * 100;
-        sb[sco] = (9 * 29 - 12) * 100;
-        sc[sco] = 6000;
-        sd[sco] = 12000 - 200;
-        stype[sco] = 50;
-        sxtype[sco] = 1;
-        sco += 1;
-        //
-        tyobi(6 * 29, 9 * 29 - 12, 110);
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-    }
-
-    if (sta == 2 && stb == 2 && stc == 1) { // 2-2(地下)
-        bgmchange(otom[2]);
-        stagecolor = 2;
-        ma = 7500;
-        mb = 9000;
-        scrollx = 2900 * (137 - 19);
-        //
-        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,  4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 98, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 98, 1},
-                                     {4,  0,  0,  0,  0,  0,  0,  10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 0,
-                                      0,  0,  0,  0,  0,  7,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,
-                                      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,
-                                      10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0,  0,  1,  1,  1,  1,  1,  1,  0,  0,  0,  10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 0, 0, 0, 0, 0, 0,
-                                      7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 10, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0,  0,  0,  4,  4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0,
-                                      3, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0,  0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 0,  0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4,  0,  0, 0, 0, 0, 0,  0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 10, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  44, 0, 0, 1, 1, 1,  1, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 7, 7, 7, 0, 97, 0, 0, 0, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                                     {4, 7, 7, 7, 7, 7, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 0, 0, 0, 1, 1, 0, 0, 0, 0, 44, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 97, 0, 0, 0, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-                                     {4, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-                                     {5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-                                     {6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //
-        bco = 0;
-        ba[bco] = 32 * 29 * 100 - 1400;
-        bb[bco] = (-2 * 29 - 12) * 100 + 500;
-        btype[bco] = 86;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = (31 * 29 - 12) * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 7;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 38 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 38 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 42 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 42 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 46 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 46 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 58 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 66 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 76 * 29 * 100 - 1400;
-        bb[bco] = (-2 * 29 - 12) * 100 + 500;
-        btype[bco] = 86;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        sco = 0;
-        sa[sco] = 2 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 300000 - 6001;
-        sd[sco] = 3000;
-        stype[sco] = 52;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 3 * 29 * 100;
-        sb[sco] = (7 * 29 - 12) * 100;
-        sc[sco] = 3000;
-        sd[sco] = 3000;
-        stype[sco] = 105;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 107 * 29 * 100;
-        sb[sco] = (9 * 29 - 12) * 100;
-        sc[sco] = 9000 - 1;
-        sd[sco] = 24000;
-        stype[sco] = 52;
-        sxtype[sco] = 1;
-        sco += 1;
-        //
-        sa[sco] = 111 * 29 * 100;
-        sb[sco] = (7 * 29 - 12) * 100;
-        sc[sco] = 3000;
-        sd[sco] = 6000 - 200;
-        stype[sco] = 40;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 113 * 29 * 100 + 1100;
-        sb[sco] = (0 * 29 - 12) * 100;
-        sc[sco] = 4700;
-        sd[sco] = 27000 - 1000;
-        stype[sco] = 0;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 128 * 29 * 100;
-        sb[sco] = (9 * 29 - 12) * 100;
-        sc[sco] = 9000 - 1;
-        sd[sco] = 24000;
-        stype[sco] = 52;
-        sxtype[sco] = 1;
-        sco += 1;
-        //
-        sa[sco] = 131 * 29 * 100;
-        sb[sco] = (9 * 29 - 12) * 100;
-        sc[sco] = 3000;
-        sd[sco] = 6000 - 200;
-        stype[sco] = 40;
-        sxtype[sco] = 2;
-        sco += 1;
-        //
-        sa[sco] = 133 * 29 * 100 + 1100;
-        sb[sco] = (0 * 29 - 12) * 100;
-        sc[sco] = 4700;
-        sd[sco] = 32000;
-        stype[sco] = 0;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        tco = 0;
-        txtype[tco] = 0;
-        tyobi(0 * 29, 0 * 29 - 12, 4);
-        tco = 1;
-        txtype[tco] = 0;
-        tyobi(2 * 29, 9 * 29 - 12, 4);
-        tco = 2;
-        txtype[tco] = 0;
-        tyobi(3 * 29, 9 * 29 - 12, 4);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(5 * 29, 9 * 29 - 12, 115);
-        tco += 1;
-        txtype[tco] = 1;
-        tyobi(6 * 29, 9 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(5 * 29, 10 * 29 - 12, 115);
-        tco += 1;
-        txtype[tco] = 1;
-        tyobi(6 * 29, 10 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(5 * 29, 11 * 29 - 12, 115);
-        tco += 1;
-        txtype[tco] = 1;
-        tyobi(6 * 29, 11 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(5 * 29, 12 * 29 - 12, 115);
-        tco += 1;
-        txtype[tco] = 1;
-        tyobi(6 * 29, 12 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(70 * 29, 7 * 29 - 12, 115);
-        tco += 1;
-        txtype[tco] = 1;
-        tyobi(71 * 29, 7 * 29 - 12, 115);
-        tco += 1;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-    }
-
-    if (sta == 2 && stb == 2 && stc == 2) { // 2-2 地上
-                                            //
-        bgmchange(otom[1]);
-        stagecolor = 1;
-        scrollx = 2900 * (36 - 19);
-        ma = 7500;
-        mb = 3000 * 9;
-        //
-        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 41, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 54, 0, 0},
-                                     {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //
-        bco = 0;
-        ba[bco] = 9 * 29 * 100;
-        bb[bco] = (12 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 10 * 29 * 100;
-        bb[bco] = (11 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 11 * 29 * 100;
-        bb[bco] = (10 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 12 * 29 * 100;
-        bb[bco] = (9 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 13 * 29 * 100;
-        bb[bco] = (8 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 14 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 15 * 29 * 100;
-        bb[bco] = (6 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 16 * 29 * 100;
-        bb[bco] = (5 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 17 * 29 * 100;
-        bb[bco] = (5 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 18 * 29 * 100;
-        bb[bco] = (5 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 19 * 29 * 100;
-        bb[bco] = (5 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 20 * 29 * 100;
-        bb[bco] = (5 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-    }
-    //
-    if (sta == 2 && stb == 3 && stc == 0) { // 2-3
-        ma = 7500;
-        mb = 3000 * 8;
-        bgmchange(otom[1]);
-        stagecolor = 1;
-        scrollx = 2900 * (126 - 19);
-        //
-        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4,
-                                      4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 82, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0, 0, 7,  0,  7,  0,  0,  0,
-                                      0,  0,  4,  4,  4,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0,  0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0,  0, 0, 4, 10, 10, 10, 10, 10, 10,
-                                      10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 99, 0, 0, 0, 0,  0,  0,  0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 0, 51, 0, 1, 0, 0,
-                                      0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 82, 0, 4, 0, 0,  0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,  0, 0},
-                                     {0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 0, 0, 1, 7, 0,
-                                      0, 0, 4, 4, 4, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,
-                                      0,  0, 4,  4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 10, 4, 4, 4, 0,
-                                      54, 0, 54, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 4,
-                                      4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 7, 4, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  4, 0, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52, 0, 0, 0, 0, 4, 1, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 7, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 5, 5, 5, 5, 5},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0,
-                                      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 6, 6, 6, 6, 6},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //
-        tco = 0;
-        txtype[tco] = 0;
-        for (int i = -1; i > -7; i -= 1) {
-            tyobi(55 * 29, i * 29 - 12, 4);
-            tco += 1;
-        }
-        //
-        txtype[tco] = 0;
-        tyobi(64 * 29, 12 * 29 - 12, 120);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(66 * 29, 3 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(67 * 29, 3 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(68 * 29, 3 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 8;
-        tyobi(60 * 29, 6 * 29 - 12, 300);
-        tco += 1;
-        /*
-           bco = 1;
-           ba[bco]=(54*29-12)*100;
-           bb[bco]=(1*29-12)*100;
-           btype[bco]=80;
-           bxtype[bco]=0;
-           bco += 1;
-         */
-        sco = 0;
-        ba[sco] = (102 * 29 - 12) * 100;
-        bb[sco] = (10 * 29 - 12) * 100;
-        btype[sco] = 50;
-        bxtype[sco] = 1;
-        sco += 1;
-        //
-        srco = 0;
-        sra[srco] = 1 * 29 * 100;
-        srb[srco] = (10 * 29 - 12) * 100;
-        src[srco] = 5 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 1;
-        sre[srco] = 0;
-        srsp[srco] = 10;
-        srco++;
-        //
-        sra[srco] = 18 * 29 * 100;
-        srb[srco] = (4 * 29 - 12) * 100;
-        src[srco] = 3 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 0;
-        sre[srco] = 0;
-        srsp[srco] = 10;
-        srco++;
-        //
-        sra[srco] = 35 * 29 * 100;
-        srb[srco] = (4 * 29 - 12) * 100;
-        src[srco] = 5 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 0;
-        sre[srco] = 0;
-        srsp[srco] = 10;
-        srco++;
-        //
-        sra[srco] = 35 * 29 * 100;
-        srb[srco] = (8 * 29 - 12) * 100;
-        src[srco] = 5 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 0;
-        sre[srco] = 0;
-        srsp[srco] = 10;
-        srco++;
-        //
-        sra[srco] = 94 * 29 * 100;
-        srb[srco] = (6 * 29 - 12) * 100;
-        src[srco] = 3 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 0;
-        sre[srco] = 0;
-        srsp[srco] = 1;
-        srco++;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
-        }
-    }
-    //
-    if (sta == 2 && stb == 4 && (stc == 0 || stc == 10 || stc == 12)) { // 2-4(1番)
-        if (stc == 0) {
-            ma = 7500;
-            mb = 3000 * 4;
-        } else {
-            ma = 19500;
-            mb = 3000 * 11;
             stc = 0;
-        }
-        bgmchange(otom[4]);
-        stagecolor = 4;
-        scrollx = 2900 * (40 - 19);
-        //
-        byte stagedatex[17][1001] = {{5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 10, 10, 10, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 10, 10, 10, 5, 5, 5, 5, 5},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 7, 7, 7, 3, 7, 0, 7, 5, 0, 0, 5, 5, 5, 0, 58, 0, 5, 0, 0, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 59, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 59, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5},
-                                     {5, 5, 5, 5, 5, 5, 40, 0, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 59, 0, 5, 5, 5, 5, 5},
-                                     {5, 86, 5, 5, 5, 5, 41, 0, 5, 86, 0, 0, 86, 5, 5, 5, 5, 86, 0, 0, 86, 0, 0, 86, 5, 0, 86, 5, 5, 5, 86, 0, 0, 5, 5, 5, 5, 5},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 0, 0, 0, 0}};
-        //
-        tco = 0;
-        txtype[tco] = 0;
-        tyobi(0 * 29, -1 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(4 * 29, -1 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(1 * 29, 14 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(6 * 29, 14 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(7 * 29, 14 * 29 - 12, 5);
-        tco += 1;
-        //
-        bco = 0;
-        ba[bco] = 2 * 29 * 100 - 1400;
-        bb[bco] = (-2 * 29 - 12) * 100 + 500;
-        btype[bco] = 86;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 20 * 29 * 100 + 1500;
-        bb[bco] = (5 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        sco = 0;
-        sa[sco] = 17 * 29 * 100;
-        sb[sco] = (9 * 29 - 12) * 100;
-        sc[sco] = 21000 - 1;
-        sd[sco] = 3000 - 1;
-        stype[sco] = 52;
-        sxtype[sco] = 2;
-        sco += 1;
-        //
-        sa[sco] = 27 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 6000;
-        sd[sco] = 6000;
-        stype[sco] = 50;
-        sxtype[sco] = 6;
-        sco += 1;
-        //
-        sa[sco] = 34 * 29 * 100;
-        sb[sco] = (5 * 29 - 12) * 100;
-        sc[sco] = 6000;
-        sd[sco] = 30000;
-        stype[sco] = 50;
-        sxtype[sco] = 1;
-        sco += 1;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
+
+            for (tt = 0; tt <= 1000; tt++) {
+                for (t = 0; t <= 16; t++) {
+                    stagedate[t][tt] = 0;
+                    stagedate[t][tt] = stagedatex[t][tt];
+                }
             }
-        }
+
+        } // sta4
     }
 
-    if (sta == 2 && stb == 4 && stc == 1) { // 2-4(2番)
-        ma = 4500;
-        mb = 3000 * 11;
-        bgmchange(otom[4]);
-        stagecolor = 4;
-        scrollx = 2900 * (21 - 19);
-        //
-        byte stagedatex[17][1001] = {{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 98},        {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},         {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},         {0, 0, 0, 7, 7, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},         {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0},         {0, 5, 5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 10, 10, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0},       {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 44, 0, 0},
-                                     {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 97, 0, 0, 0},        {0, 40, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5},
-                                     {86, 41, 0, 86, 0, 5, 86, 0, 0, 86, 0, 5, 86, 0, 0, 86, 0, 0, 86}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //
-        tco = 0;
-        txtype[tco] = 1;
-        tyobi(12 * 29, 13 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(13 * 29, 13 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(14 * 29, 13 * 29 - 12, 115);
-        tco += 1;
-        //
-        sco = 0;
-        sa[sco] = 6 * 29 * 100;
-        sb[sco] = (6 * 29 - 12) * 100;
-        sc[sco] = 18000 - 1;
-        sd[sco] = 6000 - 1;
-        stype[sco] = 52;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 12 * 29 * 100;
-        sb[sco] = (8 * 29 - 12) * 100;
-        sc[sco] = 9000 - 1;
-        sd[sco] = 3000 - 1;
-        stype[sco] = 52;
-        sxtype[sco] = 2;
-        sco += 1;
-        //
-        sa[sco] = 15 * 29 * 100;
-        sb[sco] = (11 * 29 - 12) * 100;
-        sc[sco] = 3000;
-        sd[sco] = 6000;
-        stype[sco] = 40;
-        sxtype[sco] = 2;
-        sco += 1;
-        //
-        sa[sco] = 17 * 29 * 100 + 1100;
-        sb[sco] = (0 * 29 - 12) * 100;
-        sc[sco] = 4700;
-        sd[sco] = 38000;
-        stype[sco] = 0;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
+    else if (sta == 2) {
+        if (stb == 1 && stc == 0) { // 2-1
+            ma = 5600;
+            mb = 32000;
+            bgmchange(otom[1]);
+            stagecolor = 1;
+            scrollx = 2900 * (113 - 19);
+            //
+            byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4, 4, 4, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1,
+                                          1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+                                          1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+                                          1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+                                          1, 0, 0, 4, 4, 4, 4, 4, 0, 0, 4, 7, 7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 2, 98, 2, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0,  0, 0, 0,  0,  0,  0,  4, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10,
+                                          10, 0, 0, 10, 10, 10, 10, 4, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 7, 0, 4, 4, 4, 4, 4, 4, 4,  4},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 4, 7, 7, 7, 4, 4, 4, 0, 0, 0, 0, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4,  4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0,  0, 0, 81, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 0, 0, 0, 81, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 50, 0, 0, 50, 0, 0, 50, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 0, 0, 0, 0, 0,  0, 4, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,  4, 0, 0, 0,  0, 0, 0, 0, 0},
+
+                                         {5, 5, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+                                          5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 5, 5, 5},
+                                         {6, 6, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+                                          6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 6, 6, 6},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+            //追加情報
+            tco = 0;
+            //
+            txtype[tco] = 6;
+            tyobi(1 * 29, 9 * 29 - 12, 300);
+            tco += 1;
+            //
+            txtype[tco] = 0;
+            tyobi(40 * 29, 9 * 29 - 12, 110);
+            tco += 1;
+            //
+            txtype[tco] = 7;
+            tyobi(79 * 29, 7 * 29 - 12, 300);
+            tco += 1;
+            //
+            txtype[tco] = 2;
+            tyobi(83 * 29, 7 * 29 - 12, 102);
+            tco += 1;
+            //
+            txtype[tco] = 0;
+            tyobi(83 * 29, 2 * 29 - 12, 114);
+            tco += 1;
+            //
+            for (int i = -1; i > -7; i -= 1) {
+                tyobi(85 * 29, i * 29 - 12, 4);
+                tco += 1;
+            }
+            //
+            sco = 0;
+            sa[sco] = 30 * 29 * 100;
+            sb[sco] = (13 * 29 - 12) * 100;
+            sc[sco] = 12000 - 1;
+            sd[sco] = 3000;
+            stype[sco] = 52;
+            sxtype[sco] = 0;
+            sco += 1;
+            //
+            sa[sco] = 51 * 29 * 100;
+            sb[sco] = (4 * 29 - 12) * 100;
+            sc[sco] = 9000 - 1;
+            sd[sco] = 3000;
+            stype[sco] = 51;
+            sxtype[sco] = 0;
+            sco += 1;
+            //
+            sa[sco] = 84 * 29 * 100;
+            sb[sco] = (13 * 29 - 12) * 100;
+            sc[sco] = 9000 - 1;
+            sd[sco] = 3000;
+            stype[sco] = 52;
+            sxtype[sco] = 0;
+            sco += 1;
+            //
+            sa[sco] = 105 * 29 * 100;
+            sb[sco] = (13 * 29 - 12) * 100;
+            sc[sco] = 15000 - 1;
+            sd[sco] = 3000;
+            stype[sco] = 52;
+            sxtype[sco] = 0;
+            sco += 1;
+            //
+            bco = 0;
+            //
+            ba[bco] = 6 * 29 * 100;
+            bb[bco] = (3 * 29 - 12) * 100;
+            btype[bco] = 80;
+            bxtype[bco] = 0;
+            bco += 1;
+            //
+            ba[bco] = 13 * 29 * 100;
+            bb[bco] = (6 * 29 - 12) * 100;
+            btype[bco] = 4;
+            bxtype[bco] = 1;
+            bco += 1;
+            //
+            ba[bco] = 23 * 29 * 100;
+            bb[bco] = (7 * 29 - 12) * 100;
+            btype[bco] = 80;
+            bxtype[bco] = 0;
+            bco += 1;
+            //
+            ba[bco] = 25 * 29 * 100;
+            bb[bco] = (7 * 29 - 12) * 100;
+            btype[bco] = 80;
+            bxtype[bco] = 1;
+            bco += 1;
+            //
+            ba[bco] = 27 * 29 * 100;
+            bb[bco] = (7 * 29 - 12) * 100;
+            btype[bco] = 80;
+            bxtype[bco] = 0;
+            bco += 1;
+            //
+            ba[bco] = 88 * 29 * 100;
+            bb[bco] = (12 * 29 - 12) * 100;
+            btype[bco] = 82;
+            bxtype[bco] = 1;
+            bco += 1;
+            //
+            for (tt = 0; tt <= 1000; tt++) {
+                for (t = 0; t <= 16; t++) {
+                    stagedate[t][tt] = 0;
+                    stagedate[t][tt] = stagedatex[t][tt];
+                }
             }
         }
-    }
 
-    if (sta == 2 && stb == 4 && stc == 2) { // 2-4(3番)
-        ma = 4500;
-        mb = 3000 * 11;
-        bgmchange(otom[5]); // 6
-        stagecolor = 4;
-        scrollx = 2900 * (128 - 19);
-        //
-        byte stagedatex[17][1001] = {{5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-                                      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-                                      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-                                      0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-                                      0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
-                                      0, 0, 0, 0, 5, 0, 5, 5, 5, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 0, 0, 0, 5,  0,  0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 5, 5, 5,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 5,
-                                      0, 0, 5, 0, 5, 0, 10, 10, 5, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 5, 5,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5,
-                                      0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5,
-                                      3, 0, 5, 0, 3, 0, 0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5,
-                                      0, 0, 5, 0, 5, 5, 5, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {3, 0, 0, 3, 0, 0,  3,  7, 0, 3, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 5, 0, 5, 0,
-                                      0, 0, 5, 0, 5, 10, 10, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 7, 7, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 5, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0,
-                                      0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 7, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 5, 0, 0, 0,  0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0,
-                                      0, 0, 5, 0, 0, 0, 30, 0, 5, 0, 0, 0, 0, 0, 0, 7, 7, 5, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 5, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 5, 5, 5, 5,
-                                      0, 0, 5, 0, 0, 7, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0,
-                                      0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0,
-                                      0, 0, 5, 0, 0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5, 59, 0, 59, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  5, 5,  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {5, 40, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0,
-                                      0, 0,  5, 0, 0, 0, 5, 0, 5, 0, 5, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5, 0, 59, 0, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0,  5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {5,  41, 0, 5, 86, 0,  5, 86, 0,  5, 5,  5,  5, 86, 0,  0, 86, 0,  0, 86, 0, 0,  86, 0, 0, 86, 0, 0, 86, 0, 0, 86, 0,
-                                      0,  86, 0, 0, 5,  86, 0, 0,  86, 0, 0,  86, 5, 0,  86, 0, 5,  86, 5, 0,  5, 86, 0,  0, 5, 5,  5, 5, 86, 0, 0, 5,  86,
-                                      59, 0,  5, 5, 5,  5,  5, 86, 0,  0, 86, 5,  5, 86, 0,  0, 86, 0,  0, 86, 0, 0,  5,  5, 5, 5,  5, 5, 5,  5, 5, 86, 0,
-                                      0,  86, 0, 0, 86, 0,  0, 86, 0,  0, 5,  5,  5, 5,  5,  5, 5,  5,  5, 5,  5, 5,  5,  5, 5, 5,  5, 5, 5,  5},
-                                     {0, 0,  0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 59, 0, 0, 0, 0, 0, 59, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0,  0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-        //
-        tco = 0;
-        txtype[tco] = 0;
-        tyobi(1 * 29, 14 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(2 * 29, 14 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 9;
-        tyobi(3 * 29, 4 * 29 - 12, 300);
-        tco += 1;
-        //
-        txtype[tco] = 1;
-        tyobi(32 * 29, 9 * 29 - 12, 115);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(76 * 29, 14 * 29 - 12, 5);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(108 * 29, 11 * 29 - 12, 141);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(109 * 29, 10 * 29 - 12 - 3, 140);
-        tco += 1;
-        //
-        txtype[tco] = 0;
-        tyobi(121 * 29, 10 * 29 - 12, 142);
-        tco += 1;
-        //
-        bco = 0;
-        ba[bco] = 0 * 29 * 100 + 1500;
-        bb[bco] = (8 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 105;
-        bco += 1;
-        //
-        ba[bco] = 2 * 29 * 100;
-        bb[bco] = (0 * 29 - 12) * 100;
-        btype[bco] = 80;
-        bxtype[bco] = 1;
-        bco += 1;
-        //
-        ba[bco] = 3 * 29 * 100 + 1500;
-        bb[bco] = (8 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 105;
-        bco += 1;
-        //
-        ba[bco] = 6 * 29 * 100 + 1500;
-        bb[bco] = (8 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 9 * 29 * 100 + 1500;
-        bb[bco] = (8 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 107;
-        bco += 1;
-        //
-        ba[bco] = 25 * 29 * 100 - 1400;
-        bb[bco] = (2 * 29 - 12) * 100 - 400;
-        btype[bco] = 86;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 40 * 29 * 100;
-        bb[bco] = (8 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 42 * 29 * 100;
-        bb[bco] = (8 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 43 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 105;
-        bco += 1;
-        //
-        ba[bco] = 47 * 29 * 100 + 1500;
-        bb[bco] = (6 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 105;
-        bco += 1;
-        //
-        ba[bco] = 57 * 29 * 100;
-        bb[bco] = (7 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 77 * 29 * 100 - 1400;
-        bb[bco] = (2 * 29 - 12) * 100 - 400;
-        btype[bco] = 86;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 83 * 29 * 100 - 1400;
-        bb[bco] = (2 * 29 - 12) * 100 - 400;
-        btype[bco] = 86;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 88 * 29 * 100 + 1500;
-        bb[bco] = (9 * 29 - 12) * 100 + 1500;
-        btype[bco] = 87;
-        bxtype[bco] = 105;
-        bco += 1;
-        //
-        ba[bco] = 88 * 29 * 100 + 1500;
-        bb[bco] = (9 * 29 - 12) * 100 + 1500;
-        btype[bco] = 88;
-        bxtype[bco] = 105;
-        bco += 1;
-        //
-        ba[bco] = 90 * 29 * 100;
-        bb[bco] = (9 * 29 - 12) * 100;
-        btype[bco] = 82;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        ba[bco] = 107 * 29 * 100;
-        bb[bco] = (10 * 29 - 12) * 100;
-        btype[bco] = 30;
-        bxtype[bco] = 0;
-        bco += 1;
-        //
-        sco = 0;
-        sa[sco] = 13 * 29 * 100;
-        sb[sco] = (8 * 29 - 12) * 100;
-        sc[sco] = 33000 - 1;
-        sd[sco] = 3000 - 1;
-        stype[sco] = 52;
-        sxtype[sco] = 2;
-        sco += 1;
-        //
-        sa[sco] = 13 * 29 * 100;
-        sb[sco] = (0 * 29 - 12) * 100;
-        sc[sco] = 33000 - 1;
-        sd[sco] = 3000 - 1;
-        stype[sco] = 51;
-        sxtype[sco] = 3;
-        sco += 1;
-        //
-        sa[sco] = 10 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 6000;
-        sd[sco] = 6000;
-        stype[sco] = 50;
-        sxtype[sco] = 6;
-        sco += 1;
-        //
-        sa[sco] = 46 * 29 * 100;
-        sb[sco] = (12 * 29 - 12) * 100;
-        sc[sco] = 9000 - 1;
-        sd[sco] = 3000 - 1;
-        stype[sco] = 52;
-        sxtype[sco] = 2;
-        sco += 1;
-        //
-        sa[sco] = 58 * 29 * 100;
-        sb[sco] = (13 * 29 - 12) * 100;
-        sc[sco] = 6000;
-        sd[sco] = 6000;
-        stype[sco] = 50;
-        sxtype[sco] = 6;
-        sco += 1;
-        //
-        sa[sco] = 101 * 29 * 100 - 1500;
-        sb[sco] = (10 * 29 - 12) * 100 - 3000;
-        sc[sco] = 12000;
-        sd[sco] = 12000;
-        stype[sco] = 104;
-        sxtype[sco] = 0;
-        sco += 1;
-        //
-        sa[sco] = 102 * 29 * 100 + 3000;
-        sb[sco] = (2 * 29 - 12) * 100;
-        sc[sco] = 3000 - 1;
-        sd[sco] = 300000;
-        stype[sco] = 102;
-        sxtype[sco] = 20;
-        sco += 1;
-        //
-        srco = 0;
-        sra[srco] = 74 * 29 * 100 - 1500;
-        srb[srco] = (7 * 29 - 12) * 100;
-        src[srco] = 2 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 1;
-        sre[srco] = 0;
-        srsp[srco] = 0;
-        srco = 20;
-        //
-        sra[srco] = 97 * 29 * 100;
-        srb[srco] = (12 * 29 - 12) * 100;
-        src[srco] = 12 * 3000;
-        srtype[srco] = 0;
-        sracttype[srco] = 0;
-        sre[srco] = 0;
-        srsp[srco] = 21;
-        srco += 1;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
+        else if (stb == 2) {
+            if (stc == 0) { // 2-2(地上)
+                bgmchange(otom[1]);
+                stagecolor = 1;
+                scrollx = 2900 * (19 - 19);
+                //
+                byte stagedatex[17][1001];
+                getStageData(sta, stb, stc, stagedatex);
+
+                sa[sco] = 14 * 29 * 100 + 200;
+                sb[sco] = -6000;
+                sc[sco] = 5000;
+                sd[sco] = 70000;
+                stype[sco] = 100;
+                sco += 1;
+                //
+                sa[sco] = 12 * 29 * 100 + 1200;
+                sb[sco] = -6000;
+                sc[sco] = 7000;
+                sd[sco] = 70000;
+                stype[sco] = 101;
+                sco += 1;
+                //
+                sa[sco] = 12 * 29 * 100;
+                sb[sco] = (13 * 29 - 12) * 100;
+                sc[sco] = 6000 - 1;
+                sd[sco] = 3000;
+                stype[sco] = 52;
+                sgtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 14 * 29 * 100;
+                sb[sco] = (9 * 29 - 12) * 100;
+                sc[sco] = 6000;
+                sd[sco] = 12000 - 200;
+                stype[sco] = 50;
+                sxtype[sco] = 1;
+                sco += 1;
+                //
+                tyobi(6 * 29, 9 * 29 - 12, 110);
+                //
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+            }
+
+            else if (stc == 1) { // 2-2(地下)
+                bgmchange(otom[2]);
+                stagecolor = 2;
+                ma = 7500;
+                mb = 9000;
+                scrollx = 2900 * (137 - 19);
+                //
+                byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 98, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 98, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 0, 0,  0,  0,  0,  0,  7,  0,  0,  0,  7,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,  1,  4,  4,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,  4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 4, 4,  4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 7, 0, 0,  0, 0, 0, 0, 0, 0, 10, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0, 0, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 7, 7, 7, 0, 97, 0, 0, 0, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+                                             {4, 7, 7, 7, 7, 7, 7, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 0, 0, 0, 1, 1, 0, 0, 0, 0, 44, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 97, 0, 0, 0, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
+                                             {4, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
+                                             {5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
+                                             {6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+                //
+                bco = 0;
+                ba[bco] = 32 * 29 * 100 - 1400;
+                bb[bco] = (-2 * 29 - 12) * 100 + 500;
+                btype[bco] = 86;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = (31 * 29 - 12) * 100;
+                bb[bco] = (7 * 29 - 12) * 100;
+                btype[bco] = 7;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 38 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 38 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 42 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 42 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 46 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 46 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 58 * 29 * 100;
+                bb[bco] = (7 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 66 * 29 * 100;
+                bb[bco] = (7 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 76 * 29 * 100 - 1400;
+                bb[bco] = (-2 * 29 - 12) * 100 + 500;
+                btype[bco] = 86;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                sco = 0;
+                sa[sco] = 2 * 29 * 100;
+                sb[sco] = (13 * 29 - 12) * 100;
+                sc[sco] = 300000 - 6001;
+                sd[sco] = 3000;
+                stype[sco] = 52;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 3 * 29 * 100;
+                sb[sco] = (7 * 29 - 12) * 100;
+                sc[sco] = 3000;
+                sd[sco] = 3000;
+                stype[sco] = 105;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 107 * 29 * 100;
+                sb[sco] = (9 * 29 - 12) * 100;
+                sc[sco] = 9000 - 1;
+                sd[sco] = 24000;
+                stype[sco] = 52;
+                sxtype[sco] = 1;
+                sco += 1;
+                //
+                sa[sco] = 111 * 29 * 100;
+                sb[sco] = (7 * 29 - 12) * 100;
+                sc[sco] = 3000;
+                sd[sco] = 6000 - 200;
+                stype[sco] = 40;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 113 * 29 * 100 + 1100;
+                sb[sco] = (0 * 29 - 12) * 100;
+                sc[sco] = 4700;
+                sd[sco] = 27000 - 1000;
+                stype[sco] = 0;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 128 * 29 * 100;
+                sb[sco] = (9 * 29 - 12) * 100;
+                sc[sco] = 9000 - 1;
+                sd[sco] = 24000;
+                stype[sco] = 52;
+                sxtype[sco] = 1;
+                sco += 1;
+                //
+                sa[sco] = 131 * 29 * 100;
+                sb[sco] = (9 * 29 - 12) * 100;
+                sc[sco] = 3000;
+                sd[sco] = 6000 - 200;
+                stype[sco] = 40;
+                sxtype[sco] = 2;
+                sco += 1;
+                //
+                sa[sco] = 133 * 29 * 100 + 1100;
+                sb[sco] = (0 * 29 - 12) * 100;
+                sc[sco] = 4700;
+                sd[sco] = 32000;
+                stype[sco] = 0;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                tco = 0;
+                txtype[tco] = 0;
+                tyobi(0 * 29, 0 * 29 - 12, 4);
+                tco = 1;
+                txtype[tco] = 0;
+                tyobi(2 * 29, 9 * 29 - 12, 4);
+                tco = 2;
+                txtype[tco] = 0;
+                tyobi(3 * 29, 9 * 29 - 12, 4);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(5 * 29, 9 * 29 - 12, 115);
+                tco += 1;
+                txtype[tco] = 1;
+                tyobi(6 * 29, 9 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(5 * 29, 10 * 29 - 12, 115);
+                tco += 1;
+                txtype[tco] = 1;
+                tyobi(6 * 29, 10 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(5 * 29, 11 * 29 - 12, 115);
+                tco += 1;
+                txtype[tco] = 1;
+                tyobi(6 * 29, 11 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(5 * 29, 12 * 29 - 12, 115);
+                tco += 1;
+                txtype[tco] = 1;
+                tyobi(6 * 29, 12 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(70 * 29, 7 * 29 - 12, 115);
+                tco += 1;
+                txtype[tco] = 1;
+                tyobi(71 * 29, 7 * 29 - 12, 115);
+                tco += 1;
+                //
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+            }
+
+            else if (stc == 2) { // 2-2 地上
+                                 //
+                bgmchange(otom[1]);
+                stagecolor = 1;
+                scrollx = 2900 * (36 - 19);
+                ma = 7500;
+                mb = 3000 * 9;
+                //
+                byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},   {0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},   {0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 41, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 54, 0, 0}, {5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+                                             {6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6},   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+                //
+                bco = 0;
+                ba[bco] = 9 * 29 * 100;
+                bb[bco] = (12 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 10 * 29 * 100;
+                bb[bco] = (11 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 11 * 29 * 100;
+                bb[bco] = (10 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 12 * 29 * 100;
+                bb[bco] = (9 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 13 * 29 * 100;
+                bb[bco] = (8 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 14 * 29 * 100;
+                bb[bco] = (7 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 15 * 29 * 100;
+                bb[bco] = (6 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 16 * 29 * 100;
+                bb[bco] = (5 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 17 * 29 * 100;
+                bb[bco] = (5 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 18 * 29 * 100;
+                bb[bco] = (5 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 19 * 29 * 100;
+                bb[bco] = (5 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 20 * 29 * 100;
+                bb[bco] = (5 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
             }
         }
-    }
+        //
+        else if (stb == 3 && stc == 0) { // 2-3
+            ma = 7500;
+            mb = 3000 * 8;
+            bgmchange(otom[1]);
+            stagecolor = 1;
+            scrollx = 2900 * (126 - 19);
+            //
+            byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 4, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0,  82, 0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 82,
+                                          0, 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 51, 0, 1, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 82, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 0, 0, 1, 7, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 10, 4, 4, 4, 0, 54, 0, 54, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 4, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 52, 0, 0, 0, 0, 4, 1, 1,
+                                          1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 10, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 30,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0,
+                                          0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5,
+                                          5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 5, 5, 5, 5, 5},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6,
+                                          6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 0, 6, 6, 6, 6, 6},
+                                         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+            //
+            tco = 0;
+            txtype[tco] = 0;
+            for (int i = -1; i > -7; i -= 1) {
+                tyobi(55 * 29, i * 29 - 12, 4);
+                tco += 1;
+            }
+            //
+            txtype[tco] = 0;
+            tyobi(64 * 29, 12 * 29 - 12, 120);
+            tco += 1;
+            //
+            txtype[tco] = 1;
+            tyobi(66 * 29, 3 * 29 - 12, 115);
+            tco += 1;
+            //
+            txtype[tco] = 1;
+            tyobi(67 * 29, 3 * 29 - 12, 115);
+            tco += 1;
+            //
+            txtype[tco] = 1;
+            tyobi(68 * 29, 3 * 29 - 12, 115);
+            tco += 1;
+            //
+            txtype[tco] = 8;
+            tyobi(60 * 29, 6 * 29 - 12, 300);
+            tco += 1;
+            /*
+               bco = 1;
+               ba[bco]=(54*29-12)*100;
+               bb[bco]=(1*29-12)*100;
+               btype[bco]=80;
+               bxtype[bco]=0;
+               bco += 1;
+             */
+            sco = 0;
+            ba[sco] = (102 * 29 - 12) * 100;
+            bb[sco] = (10 * 29 - 12) * 100;
+            btype[sco] = 50;
+            bxtype[sco] = 1;
+            sco += 1;
+            //
+            srco = 0;
+            sra[srco] = 1 * 29 * 100;
+            srb[srco] = (10 * 29 - 12) * 100;
+            src[srco] = 5 * 3000;
+            srtype[srco] = 0;
+            sracttype[srco] = 1;
+            sre[srco] = 0;
+            srsp[srco] = 10;
+            srco++;
+            //
+            sra[srco] = 18 * 29 * 100;
+            srb[srco] = (4 * 29 - 12) * 100;
+            src[srco] = 3 * 3000;
+            srtype[srco] = 0;
+            sracttype[srco] = 0;
+            sre[srco] = 0;
+            srsp[srco] = 10;
+            srco++;
+            //
+            sra[srco] = 35 * 29 * 100;
+            srb[srco] = (4 * 29 - 12) * 100;
+            src[srco] = 5 * 3000;
+            srtype[srco] = 0;
+            sracttype[srco] = 0;
+            sre[srco] = 0;
+            srsp[srco] = 10;
+            srco++;
+            //
+            sra[srco] = 35 * 29 * 100;
+            srb[srco] = (8 * 29 - 12) * 100;
+            src[srco] = 5 * 3000;
+            srtype[srco] = 0;
+            sracttype[srco] = 0;
+            sre[srco] = 0;
+            srsp[srco] = 10;
+            srco++;
+            //
+            sra[srco] = 94 * 29 * 100;
+            srb[srco] = (6 * 29 - 12) * 100;
+            src[srco] = 3 * 3000;
+            srtype[srco] = 0;
+            sracttype[srco] = 0;
+            sre[srco] = 0;
+            srsp[srco] = 1;
+            srco++;
+            //
+            for (tt = 0; tt <= 1000; tt++) {
+                for (t = 0; t <= 16; t++) {
+                    stagedate[t][tt] = 0;
+                    stagedate[t][tt] = stagedatex[t][tt];
+                }
+            }
+        }
+        //
+        else if (stb == 4) {
+            if (stc == 0 || stc == 10 || stc == 12) { // 2-4(1番)
+                if (stc == 0) {
+                    ma = 7500;
+                    mb = 3000 * 4;
+                } else {
+                    ma = 19500;
+                    mb = 3000 * 11;
+                    stc = 0;
+                }
+                bgmchange(otom[4]);
+                stagecolor = 4;
+                scrollx = 2900 * (40 - 19);
+                //
+                byte stagedatex[17][1001] = {{5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},          {5, 5, 5, 5, 5, 5, 5, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 10, 10, 10, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5},
+                                             {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 10, 10, 10, 5, 5, 5, 5, 5},       {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5},
+                                             {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5},          {5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 7, 7, 7, 3, 7, 0, 7, 5, 0, 0, 5, 5, 5, 0, 58, 0, 5, 0, 0, 5, 5},
+                                             {5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},          {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
+                                             {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},          {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},
+                                             {5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 5, 5},          {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 59, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 59, 0, 0, 5, 5, 5, 5, 5},
+                                             {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5},          {5, 5, 5, 5, 5, 5, 40, 0, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 59, 0, 5, 5, 5, 5, 5},
+                                             {5, 86, 5, 5, 5, 5, 41, 0, 5, 86, 0, 0, 86, 5, 5, 5, 5, 86, 0, 0, 86, 0, 0, 86, 5, 0, 86, 5, 5, 5, 86, 0, 0, 5, 5, 5, 5, 5}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 0, 0, 0, 0}};
+                //
+                tco = 0;
+                txtype[tco] = 0;
+                tyobi(0 * 29, -1 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(4 * 29, -1 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(1 * 29, 14 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(6 * 29, 14 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(7 * 29, 14 * 29 - 12, 5);
+                tco += 1;
+                //
+                bco = 0;
+                ba[bco] = 2 * 29 * 100 - 1400;
+                bb[bco] = (-2 * 29 - 12) * 100 + 500;
+                btype[bco] = 86;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 20 * 29 * 100 + 1500;
+                bb[bco] = (5 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                sco = 0;
+                sa[sco] = 17 * 29 * 100;
+                sb[sco] = (9 * 29 - 12) * 100;
+                sc[sco] = 21000 - 1;
+                sd[sco] = 3000 - 1;
+                stype[sco] = 52;
+                sxtype[sco] = 2;
+                sco += 1;
+                //
+                sa[sco] = 27 * 29 * 100;
+                sb[sco] = (13 * 29 - 12) * 100;
+                sc[sco] = 6000;
+                sd[sco] = 6000;
+                stype[sco] = 50;
+                sxtype[sco] = 6;
+                sco += 1;
+                //
+                sa[sco] = 34 * 29 * 100;
+                sb[sco] = (5 * 29 - 12) * 100;
+                sc[sco] = 6000;
+                sd[sco] = 30000;
+                stype[sco] = 50;
+                sxtype[sco] = 1;
+                sco += 1;
+                //
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+            }
 
-    if (sta == 3 && stb == 1 && stc == 0) { // 3-1
+            else if (stc == 1) { // 2-4(2番)
+                ma = 4500;
+                mb = 3000 * 11;
+                bgmchange(otom[4]);
+                stagecolor = 4;
+                scrollx = 2900 * (21 - 19);
+                //
+                byte stagedatex[17][1001] = {{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 98}, {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},         {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 7, 7, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  {0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},         {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0},  {0, 5, 5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0},  {0, 10, 10, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0},       {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 44, 0, 0},
+                                             {0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 97, 0, 0, 0}, {0, 40, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5}, {86, 41, 0, 86, 0, 5, 86, 0, 0, 86, 0, 5, 86, 0, 0, 86, 0, 0, 86}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+                //
+                tco = 0;
+                txtype[tco] = 1;
+                tyobi(12 * 29, 13 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(13 * 29, 13 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(14 * 29, 13 * 29 - 12, 115);
+                tco += 1;
+                //
+                sco = 0;
+                sa[sco] = 6 * 29 * 100;
+                sb[sco] = (6 * 29 - 12) * 100;
+                sc[sco] = 18000 - 1;
+                sd[sco] = 6000 - 1;
+                stype[sco] = 52;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 12 * 29 * 100;
+                sb[sco] = (8 * 29 - 12) * 100;
+                sc[sco] = 9000 - 1;
+                sd[sco] = 3000 - 1;
+                stype[sco] = 52;
+                sxtype[sco] = 2;
+                sco += 1;
+                //
+                sa[sco] = 15 * 29 * 100;
+                sb[sco] = (11 * 29 - 12) * 100;
+                sc[sco] = 3000;
+                sd[sco] = 6000;
+                stype[sco] = 40;
+                sxtype[sco] = 2;
+                sco += 1;
+                //
+                sa[sco] = 17 * 29 * 100 + 1100;
+                sb[sco] = (0 * 29 - 12) * 100;
+                sc[sco] = 4700;
+                sd[sco] = 38000;
+                stype[sco] = 0;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+            }
+
+            else if (stc == 2) { // 2-4(3番)
+                ma = 4500;
+                mb = 3000 * 11;
+                bgmchange(otom[5]); // 6
+                stagecolor = 4;
+                scrollx = 2900 * (128 - 19);
+                //
+                byte stagedatex[17][1001] = {{5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+                                              5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+                                             {5, 0, 0, 0, 0,  0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 0, 0,  0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 0, 0,  0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 5, 5, 5, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 0, 0,  0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 5, 0, 0, 5, 0, 5, 0, 10, 10, 5, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 3, 0, 5, 0, 3, 0, 0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 5, 0, 5, 5, 5, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {3, 0, 0, 3, 0, 0, 3, 7, 0, 3, 7, 7, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 10, 10, 0, 5, 0, 5, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 7, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 30, 0, 5, 0, 0, 0, 0, 0, 0, 7, 7, 5, 0, 0, 0, 5,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                             {5, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 5, 5, 5, 5, 0, 0, 5, 0, 0, 7, 0, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5,
+                                              0, 0, 0, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+                                             {5,  0, 0,  5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 0, 5, 0, 0, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5,
+                                              59, 0, 59, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+                                             {5, 40, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 0, 5, 0, 5, 0, 0, 0, 5, 0, 0, 5, 0, 0, 0, 5,
+                                              0, 59, 0, 5, 5, 5, 5, 5, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+                                             {5,  41, 0, 5, 86, 0, 5, 86, 0,  5, 5, 5,  5, 86, 0,  0, 86, 0,  0, 86, 0,  0, 86, 0, 0, 86, 0, 0, 86, 0, 0, 86, 0,  0, 86, 0,  0, 5, 86, 0, 0, 86, 0, 0, 86, 5, 0, 86, 0, 5, 86, 5, 0, 5, 86, 0, 0, 5, 5, 5, 5, 86, 0, 0, 5,
+                                              86, 59, 0, 5, 5,  5, 5, 5,  86, 0, 0, 86, 5, 5,  86, 0, 0,  86, 0, 0,  86, 0, 0,  5, 5, 5,  5, 5, 5,  5, 5, 5,  86, 0, 0,  86, 0, 0, 86, 0, 0, 86, 0, 0, 5,  5, 5, 5,  5, 5, 5,  5, 5, 5, 5,  5, 5, 5, 5, 5, 5, 5,  5, 5},
+                                             {0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 0, 0, 0, 0, 59, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              59, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,  0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+                //
+                tco = 0;
+                txtype[tco] = 0;
+                tyobi(1 * 29, 14 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(2 * 29, 14 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 9;
+                tyobi(3 * 29, 4 * 29 - 12, 300);
+                tco += 1;
+                //
+                txtype[tco] = 1;
+                tyobi(32 * 29, 9 * 29 - 12, 115);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(76 * 29, 14 * 29 - 12, 5);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(108 * 29, 11 * 29 - 12, 141);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(109 * 29, 10 * 29 - 12 - 3, 140);
+                tco += 1;
+                //
+                txtype[tco] = 0;
+                tyobi(121 * 29, 10 * 29 - 12, 142);
+                tco += 1;
+                //
+                bco = 0;
+                ba[bco] = 0 * 29 * 100 + 1500;
+                bb[bco] = (8 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 105;
+                bco += 1;
+                //
+                ba[bco] = 2 * 29 * 100;
+                bb[bco] = (0 * 29 - 12) * 100;
+                btype[bco] = 80;
+                bxtype[bco] = 1;
+                bco += 1;
+                //
+                ba[bco] = 3 * 29 * 100 + 1500;
+                bb[bco] = (8 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 105;
+                bco += 1;
+                //
+                ba[bco] = 6 * 29 * 100 + 1500;
+                bb[bco] = (8 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 9 * 29 * 100 + 1500;
+                bb[bco] = (8 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 107;
+                bco += 1;
+                //
+                ba[bco] = 25 * 29 * 100 - 1400;
+                bb[bco] = (2 * 29 - 12) * 100 - 400;
+                btype[bco] = 86;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 40 * 29 * 100;
+                bb[bco] = (8 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 42 * 29 * 100;
+                bb[bco] = (8 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 43 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 105;
+                bco += 1;
+                //
+                ba[bco] = 47 * 29 * 100 + 1500;
+                bb[bco] = (6 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 105;
+                bco += 1;
+                //
+                ba[bco] = 57 * 29 * 100;
+                bb[bco] = (7 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 77 * 29 * 100 - 1400;
+                bb[bco] = (2 * 29 - 12) * 100 - 400;
+                btype[bco] = 86;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 83 * 29 * 100 - 1400;
+                bb[bco] = (2 * 29 - 12) * 100 - 400;
+                btype[bco] = 86;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 88 * 29 * 100 + 1500;
+                bb[bco] = (9 * 29 - 12) * 100 + 1500;
+                btype[bco] = 87;
+                bxtype[bco] = 105;
+                bco += 1;
+                //
+                ba[bco] = 88 * 29 * 100 + 1500;
+                bb[bco] = (9 * 29 - 12) * 100 + 1500;
+                btype[bco] = 88;
+                bxtype[bco] = 105;
+                bco += 1;
+                //
+                ba[bco] = 90 * 29 * 100;
+                bb[bco] = (9 * 29 - 12) * 100;
+                btype[bco] = 82;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                ba[bco] = 107 * 29 * 100;
+                bb[bco] = (10 * 29 - 12) * 100;
+                btype[bco] = 30;
+                bxtype[bco] = 0;
+                bco += 1;
+                //
+                sco = 0;
+                sa[sco] = 13 * 29 * 100;
+                sb[sco] = (8 * 29 - 12) * 100;
+                sc[sco] = 33000 - 1;
+                sd[sco] = 3000 - 1;
+                stype[sco] = 52;
+                sxtype[sco] = 2;
+                sco += 1;
+                //
+                sa[sco] = 13 * 29 * 100;
+                sb[sco] = (0 * 29 - 12) * 100;
+                sc[sco] = 33000 - 1;
+                sd[sco] = 3000 - 1;
+                stype[sco] = 51;
+                sxtype[sco] = 3;
+                sco += 1;
+                //
+                sa[sco] = 10 * 29 * 100;
+                sb[sco] = (13 * 29 - 12) * 100;
+                sc[sco] = 6000;
+                sd[sco] = 6000;
+                stype[sco] = 50;
+                sxtype[sco] = 6;
+                sco += 1;
+                //
+                sa[sco] = 46 * 29 * 100;
+                sb[sco] = (12 * 29 - 12) * 100;
+                sc[sco] = 9000 - 1;
+                sd[sco] = 3000 - 1;
+                stype[sco] = 52;
+                sxtype[sco] = 2;
+                sco += 1;
+                //
+                sa[sco] = 58 * 29 * 100;
+                sb[sco] = (13 * 29 - 12) * 100;
+                sc[sco] = 6000;
+                sd[sco] = 6000;
+                stype[sco] = 50;
+                sxtype[sco] = 6;
+                sco += 1;
+                //
+                sa[sco] = 101 * 29 * 100 - 1500;
+                sb[sco] = (10 * 29 - 12) * 100 - 3000;
+                sc[sco] = 12000;
+                sd[sco] = 12000;
+                stype[sco] = 104;
+                sxtype[sco] = 0;
+                sco += 1;
+                //
+                sa[sco] = 102 * 29 * 100 + 3000;
+                sb[sco] = (2 * 29 - 12) * 100;
+                sc[sco] = 3000 - 1;
+                sd[sco] = 300000;
+                stype[sco] = 102;
+                sxtype[sco] = 20;
+                sco += 1;
+                //
+                srco = 0;
+                sra[srco] = 74 * 29 * 100 - 1500;
+                srb[srco] = (7 * 29 - 12) * 100;
+                src[srco] = 2 * 3000;
+                srtype[srco] = 0;
+                sracttype[srco] = 1;
+                sre[srco] = 0;
+                srsp[srco] = 0;
+                srco = 20;
+                //
+                sra[srco] = 97 * 29 * 100;
+                srb[srco] = (12 * 29 - 12) * 100;
+                src[srco] = 12 * 3000;
+                srtype[srco] = 0;
+                sracttype[srco] = 0;
+                sre[srco] = 0;
+                srsp[srco] = 21;
+                srco += 1;
+                //
+                for (tt = 0; tt <= 1000; tt++) {
+                    for (t = 0; t <= 16; t++) {
+                        stagedate[t][tt] = 0;
+                        stagedate[t][tt] = stagedatex[t][tt];
+                    }
+                }
+            }
+        }
+    } else if (sta == 3 && stb == 1 && stc == 0) { // 3-1
         ma = 5600;
         mb = 32000;
         bgmchange(otom[1]);
         stagecolor = 5;
         scrollx = 2900 * (112 - 19);
-        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 0, 0, 0, 0, 4, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 7, 0, 4,
-                                      4, 4, 0, 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 4, 7, 7, 7, 7,  4, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10, 10, 0, 0, 10,
-                                      10, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  4, 4, 4,
-                                      4,  0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0},
-                                     {0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 7, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      3, 0, 3, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 4, 4, 4, 4,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 4, 0, 7, 7, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 4},
-                                     {0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0,
-                                      4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 51, 1, 0, 81, 0, 0, 1, 1, 1, 1, 1, 7, 0, 0, 0, 0,
-                                      0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      4, 0, 0, 0, 0, 0, 0, 7, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 0,  0, 0, 0,  0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
-                                     {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0,
-                                      5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0,
-                                      5, 5, 5, 5, 5, 5, 0, 0, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
-                                     {0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0,
-                                      6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0,
-                                      6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
-                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+        byte stagedatex[17][1001] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 4, 4, 4, 7, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 7, 7, 7, 4, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10, 10, 0, 0, 10, 10, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0,  0,  0, 0, 0,  0,  0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 7, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 4, 4, 4, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 4, 0, 7, 7, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 4},
+                                     {0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
+                                     {0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 51, 1, 0, 81, 0, 0, 1, 1, 1, 1, 1, 7, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,  0, 0, 0,  7, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4},
+                                     {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5, 5, 5, 5, 5, 5, 0, 0, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
+                                     {0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
+                                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
         //追加情報
         tco = 0;
         //
@@ -7385,7 +6584,7 @@ void ttmsg() {
         if (tmsgtype == 2) {
             //フォント
             setfont(20, 5);
-            switch(tmsg){
+            switch (tmsg) {
                 case 0:
                     setcolor(0xFF, 0xFF, 0xFF); // setc1();
                     //フォント
@@ -7453,11 +6652,10 @@ void ttmsg() {
                     txmsg("決して怪しいブロックじゃないですよ", 5);
                     txmsg("                          (…チッ)", 6);
                     break;
-
             }
             setfont(16, 4);
         }
-    }// 2
+    } // 2
 
     if (tmsgtype == 3) {
         xx[5] = (((15 - 1) * 1200 + 1500) / 100 - tmsgy / 100);
