@@ -58,6 +58,11 @@ Unimplemented
 
 Release Changelog
 -----------------
+**Open Syobon Action RC 4 (not finished yet)**
+* Prettier graphics
+* Level editor (?)
+* Performance optimizations
+
 **Open Syobon Action RC 3**
 * Fixed audio on Windows 7 and above
 
