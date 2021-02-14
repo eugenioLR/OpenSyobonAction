@@ -20,7 +20,6 @@ int maintm = 0;
 
 //ステージ
 int stagecolor = 1;
-int sta = 1, stb = 4, stc = 0;
 
 //トラップ表示
 int trap = 1;
@@ -189,7 +188,7 @@ int fxmax = 48000, fymax = 42000;
 byte stagedate[17][2001];
 
 //画面黒
-int blacktm = 1, blackx = 0;
+int blacktm = 1, blackscreen = 0;
 
 //自由な値
 int xx[91];
