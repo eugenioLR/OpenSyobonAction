@@ -946,11 +946,6 @@ void gameLogic(int *screenType) {
     if (ending)
         *screenType = CREDITS_SCREEN;
 
-    if(CheckHitKey(KEY_INPUT_3)){
-        section = 1;
-        stagep(world, level, section);
-    }
-
     //キー
     switch (*screenType) {
         case GAME_SCREEN:
@@ -3720,6 +3715,9 @@ void gameLogic(int *screenType) {
                 maintm = 0;
                 *screenType = GAME_SCREEN;
                 reload = 0;
+                if((world == 1 && level == 3 && section == 6) || (world == 2 && level == 4 && (section == 10 || section == 12))){
+                    section = 0;
+                }
             }
             break;
         case TITLE_SCREEN:
@@ -4266,12 +4264,13 @@ void stagep(int world, int level, int section) {
 
     // 1-レンガ,2-コイン,3-空,4-土台//5-6地面//7-隠し//
 
+    byte stagedatex[17][1001];
+    getStageData(world, level, section, stagedatex);
+
     if (world == 1) {
         // 1-1
         if (level == 1 && section == 0) {
 
-            byte stagedatex[17][1001];
-            getStageData(world, level, section, stagedatex);
             //追加情報
             tyobi(8 * 29, 9 * 29 - 12, 100);
             txtype[tco] = 2;
@@ -4372,9 +4371,6 @@ void stagep(int world, int level, int section) {
                 //マリ　地上　入れ
                 bgmchange(otom[1]);
                 scrollx = 0 * 100;
-
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
                 tco = 0;
                 //ヒント1
                 txtype[tco] = 1;
@@ -4433,9 +4429,6 @@ void stagep(int world, int level, int section) {
                 ma = 6000;
                 mb = 3000;
                 stagecolor = 2;
-
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 tco = 0;
                 txtype[tco] = 2;
@@ -4692,9 +4685,6 @@ void stagep(int world, int level, int section) {
                 ma = 7500;
                 mb = 3000 * 9;
 
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
-
                 /*
                 //毒1
                 tyobi(13*29,8*29-12,114);
@@ -4754,10 +4744,6 @@ void stagep(int world, int level, int section) {
 
                 scrollx = 3900 * 100;
                 // ma=3000;mb=3000;
-
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
-
                 tco = 0;
                 tyobi(22 * 29, 3 * 29 - 12, 1);
                 //毒1
@@ -4975,9 +4961,6 @@ void stagep(int world, int level, int section) {
                 ma = 6000;
                 mb = 6000;
                 stagecolor = 2;
-
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
                 tco = 0;
                 // tyobi(15*29,12*29-12,111);
 
@@ -5003,9 +4986,6 @@ void stagep(int world, int level, int section) {
                 mb = 33000;
 
                 stagepoint = 1;
-
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
                 sco = 0;
                 t = sco;
                 sa[t] = 14 * 29 * 100 - 5;
@@ -5047,9 +5027,6 @@ void stagep(int world, int level, int section) {
             ma = 12000;
             mb = 6000;
             stagecolor = 4;
-
-            byte stagedatex[17][1001];
-            getStageData(world, level, section, stagedatex);
 
             sco = 0; // sco=140;
             t = sco;
@@ -5312,9 +5289,6 @@ void stagep(int world, int level, int section) {
             bgmchange(otom[1]);
             stagecolor = 1;
             scrollx = 2900 * (113 - 19);
-            //
-            byte stagedatex[17][1001];
-            getStageData(world, level, section, stagedatex);
 
             tco = 0;
             //
@@ -5413,13 +5387,6 @@ void stagep(int world, int level, int section) {
             btype[bco] = 82;
             bxtype[bco] = 1;
             bco += 1;
-            //
-            for (tt = 0; tt <= 1000; tt++) {
-                for (t = 0; t <= 16; t++) {
-                    stagedate[t][tt] = 0;
-                    stagedate[t][tt] = stagedatex[t][tt];
-                }
-            }
         }
 
         else if (level == 2) {
@@ -5427,9 +5394,6 @@ void stagep(int world, int level, int section) {
                 bgmchange(otom[1]);
                 stagecolor = 1;
                 scrollx = 2900 * (19 - 19);
-                //
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 sa[sco] = 14 * 29 * 100 + 200;
                 sb[sco] = -6000;
@@ -5462,13 +5426,6 @@ void stagep(int world, int level, int section) {
                 sco += 1;
                 //
                 tyobi(6 * 29, 9 * 29 - 12, 110);
-                //
-                for (tt = 0; tt <= 1000; tt++) {
-                    for (t = 0; t <= 16; t++) {
-                        stagedate[t][tt] = 0;
-                        stagedate[t][tt] = stagedatex[t][tt];
-                    }
-                }
             }
 
             else if (section == 1) { // 2-2(地下)
@@ -5477,9 +5434,6 @@ void stagep(int world, int level, int section) {
                 ma = 7500;
                 mb = 9000;
                 scrollx = 2900 * (137 - 19);
-                //
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 bco = 0;
                 ba[bco] = 32 * 29 * 100 - 1400;
@@ -5658,13 +5612,6 @@ void stagep(int world, int level, int section) {
                 txtype[tco] = 1;
                 tyobi(71 * 29, 7 * 29 - 12, 115);
                 tco += 1;
-                //
-                for (tt = 0; tt <= 1000; tt++) {
-                    for (t = 0; t <= 16; t++) {
-                        stagedate[t][tt] = 0;
-                        stagedate[t][tt] = stagedatex[t][tt];
-                    }
-                }
             }
 
             else if (section == 2) { // 2-2 地上
@@ -5674,9 +5621,6 @@ void stagep(int world, int level, int section) {
                 scrollx = 2900 * (36 - 19);
                 ma = 7500;
                 mb = 3000 * 9;
-
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 bco = 0;
                 ba[bco] = 9 * 29 * 100;
@@ -5750,13 +5694,6 @@ void stagep(int world, int level, int section) {
                 btype[bco] = 82;
                 bxtype[bco] = 1;
                 bco += 1;
-                //
-                for (tt = 0; tt <= 1000; tt++) {
-                    for (t = 0; t <= 16; t++) {
-                        stagedate[t][tt] = 0;
-                        stagedate[t][tt] = stagedatex[t][tt];
-                    }
-                }
             }
         }
         //
@@ -5766,9 +5703,6 @@ void stagep(int world, int level, int section) {
             bgmchange(otom[1]);
             stagecolor = 1;
             scrollx = 2900 * (126 - 19);
-            //
-            byte stagedatex[17][1001];
-            getStageData(world, level, section, stagedatex);
             tco = 0;
             txtype[tco] = 0;
             for (int i = -1; i > -7; i -= 1) {
@@ -5855,13 +5789,6 @@ void stagep(int world, int level, int section) {
             sre[srco] = 0;
             srsp[srco] = 1;
             srco++;
-            //
-            for (tt = 0; tt <= 1000; tt++) {
-                for (t = 0; t <= 16; t++) {
-                    stagedate[t][tt] = 0;
-                    stagedate[t][tt] = stagedatex[t][tt];
-                }
-            }
         }
         //
         else if (level == 4) {
@@ -5877,9 +5804,6 @@ void stagep(int world, int level, int section) {
                 bgmchange(otom[4]);
                 stagecolor = 4;
                 scrollx = 2900 * (40 - 19);
-                //
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 tco = 0;
                 txtype[tco] = 0;
@@ -5939,13 +5863,6 @@ void stagep(int world, int level, int section) {
                 stype[sco] = 50;
                 sxtype[sco] = 1;
                 sco += 1;
-                //
-                for (tt = 0; tt <= 1000; tt++) {
-                    for (t = 0; t <= 16; t++) {
-                        stagedate[t][tt] = 0;
-                        stagedate[t][tt] = stagedatex[t][tt];
-                    }
-                }
             }
 
             else if (section == 1) { // 2-4(2番)
@@ -5954,9 +5871,6 @@ void stagep(int world, int level, int section) {
                 bgmchange(otom[4]);
                 stagecolor = 4;
                 scrollx = 2900 * (21 - 19);
-                //
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 tco = 0;
                 txtype[tco] = 1;
@@ -6003,13 +5917,6 @@ void stagep(int world, int level, int section) {
                 stype[sco] = 0;
                 sxtype[sco] = 0;
                 sco += 1;
-                //
-                for (tt = 0; tt <= 1000; tt++) {
-                    for (t = 0; t <= 16; t++) {
-                        stagedate[t][tt] = 0;
-                        stagedate[t][tt] = stagedatex[t][tt];
-                    }
-                }
             }
 
             else if (section == 2) { // 2-4(3番)
@@ -6018,9 +5925,6 @@ void stagep(int world, int level, int section) {
                 bgmchange(otom[5]); // 6
                 stagecolor = 4;
                 scrollx = 2900 * (128 - 19);
-                //
-                byte stagedatex[17][1001];
-                getStageData(world, level, section, stagedatex);
 
                 tco = 0;
                 txtype[tco] = 0;
@@ -6233,13 +6137,6 @@ void stagep(int world, int level, int section) {
                 sre[srco] = 0;
                 srsp[srco] = 21;
                 srco += 1;
-                //
-                for (tt = 0; tt <= 1000; tt++) {
-                    for (t = 0; t <= 16; t++) {
-                        stagedate[t][tt] = 0;
-                        stagedate[t][tt] = stagedatex[t][tt];
-                    }
-                }
             }
         }
     } else if (world == 3 && level == 1 && section == 0) { // 3-1
@@ -6248,8 +6145,6 @@ void stagep(int world, int level, int section) {
         bgmchange(otom[1]);
         stagecolor = 5;
         scrollx = 2900 * (112 - 19);
-        byte stagedatex[17][1001];
-        getStageData(world, level, section, stagedatex);
         tco = 0;
         //
         txtype[tco] = 10;
@@ -6327,12 +6222,12 @@ void stagep(int world, int level, int section) {
         sre[srco] = 0;
         srsp[srco] = 3;
         srco = 0;
-        //
-        for (tt = 0; tt <= 1000; tt++) {
-            for (t = 0; t <= 16; t++) {
-                stagedate[t][tt] = 0;
-                stagedate[t][tt] = stagedatex[t][tt];
-            }
+    }
+
+    for (tt = 0; tt <= 1000; tt++) {
+        for (t = 0; t <= 16; t++) {
+            stagedate[t][tt] = 0;
+            stagedate[t][tt] = stagedatex[t][tt];
         }
     }
 

@@ -29,9 +29,13 @@ void stageDataFromFile(char *filename, byte stageData[HEIGHT][LENGTH]){
 
 }
 
-void getStageData(int world, int stage, int section, byte stageData[HEIGHT][LENGTH]){
+void getStageData(int world, int level, int section, byte stageData[HEIGHT][LENGTH]){
     char filename[25];
-    sprintf(filename, "stages/stage%d-%d-%d.stg", world, stage, section);
+    if((world == 1 && level == 3 && section == 6) || (world == 2 && level == 4 && (section == 10 || section == 12))){
+        section = 0;
+    }
+
+    sprintf(filename, "stages/stage%d-%d-%d.stg", world, level, section);
     stageDataFromFile(filename, stageData);
 }
 
