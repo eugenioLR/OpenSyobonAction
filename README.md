@@ -2,7 +2,8 @@ Open Syobon Action
 ==================
 ###### Original game developer: Chiku (ちく)
 ###### Open-source port developer: Mathew Velasquez
-###### Developer/maintainer of this fork: Karen／明美 (@angelXwind)
+###### Developer/maintainer of the previous fork: Karen／明美 (@angelXwind)
+###### Developer/maintainer of this fork: eugenioLR
 #### [English] [[日本語]](README_ja.md)
 
 Open Syobon Action (オープンしょぼんのアクション) is an open-source cross-platform port of the unforgiving Japanese platformer using SDL.
@@ -57,6 +58,11 @@ Unimplemented
 
 Release Changelog
 -----------------
+**Open Syobon Action RC 4 (not finished yet)**
+* Prettier graphics
+* Level editor (?)
+* Performance optimizations
+
 **Open Syobon Action RC 3**
 * Fixed audio on Windows 7 and above
 
