@@ -1,7 +1,7 @@
 // This file is a reverse engineered "DxLib.h" to the extent that
 // Syobon Action uses it. Minor functions are just replaced with SDL
 // counterparts.
-#include <SDL/SDL.h>
+#include "SDL/SDL.h"
 #include <SDL/SDL_gfxPrimitives.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>

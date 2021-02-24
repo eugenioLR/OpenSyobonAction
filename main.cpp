@@ -3541,7 +3541,7 @@ void gameLogic(int *screenType) {
                 maintm = 0;
                 *screenType = GAME_SCREEN;
                 reload = 0;
-                if ((world == 1 && level == 3 && section == 6) || (world == 2 && level == 4 && (section == 10 || section == 12))) {
+                if ((world == 1 && level == 3 && section == 6) || (world == 2 && level == 4 && (section == 10 || section == 12)) || (world == 1 && level == 3 && section == 1)) {
                     section = 0;
                 }
             }

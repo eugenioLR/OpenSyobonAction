@@ -1,10 +1,10 @@
 #include "DxLib.h"
 #include <algorithm>
 
-#define HEIGHT 17
-#define LENGTH 1001
+#define STAGEHEIGHT 17
+#define STAGELENGTH 1001
 #define BUFFERSIZE 3000
 
-void stageDataFromFile(char *, byte[HEIGHT][LENGTH]);
+void stageDataFromFile(char *, byte[STAGEHEIGHT][STAGELENGTH]);
 
-void getStageData(int, int, int, byte[HEIGHT][LENGTH]);
+void getStageData(int, int, int, byte[STAGEHEIGHT][STAGELENGTH]);

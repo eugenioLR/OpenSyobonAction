@@ -1,9 +1,5 @@
 #include "stageReader.h"
 
-#define STAGEHEIGHT 17
-#define STAGELENGTH 1001
-#define BUFFERSIZE 3000
-
 void stageDataFromFile(char *filename, byte stageData[STAGEHEIGHT][STAGELENGTH]) {
     char line[BUFFERSIZE], *aux;
     FILE *file = fopen(filename, "r");
@@ -22,9 +18,9 @@ void stageDataFromFile(char *filename, byte stageData[STAGEHEIGHT][STAGELENGTH])
                 } else {
                     stageData[i][j] = 0;
                 }
-                printf("%d ", stageData[i][j]); //debug
+                //printf("%d ", stageData[i][j]); //debug
             }
-            printf("\n"); //debug
+            //printf("\n"); //debug
         }
     }else{
         printf("Stage \"%s\" does not exist\n", filename);
