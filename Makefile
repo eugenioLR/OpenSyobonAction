@@ -1,8 +1,16 @@
-SyobonAction:main.o loadg.o DxLib.o
-	gcc main.o loadg.o DxLib.o -o SyobonAction `sdl-config --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lSDL_ttf
-main.o:main.cpp
-	gcc -c main.cpp
-loadg.o:loadg.cpp
-	gcc -c loadg.cpp
-DxLib.o:DxLib.cpp
-	gcc -c DxLib.cpp
+CXX = g++
+CXXFLAGS = -I/app/include/SDL -I/app/include/freetype2
+LDFLAGS = -L/app/lib -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lSDL_gfx -lm
+
+OBJS = main.o loadg.o DxLib.o
+
+all: SyobonAction
+
+SyobonAction: $(OBJS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+clean:
+	rm -f SyobonAction $(OBJS)
